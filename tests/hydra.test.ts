@@ -155,7 +155,7 @@ describe("Pact is a multi-party decentralized application (dApp) built on Cardan
     });
 
     describe("Hydra interaction with smartcontract", function () {
-        it("Lock", async function () {
+        it("Locks a specific amount of lovelace into the Hydra contract address.", async function () {
             // return;
             const hydraTxBuilder: HydraTxBuilder = new HydraTxBuilder({
                 meshWallet: meshWallet,
@@ -168,7 +168,7 @@ describe("Pact is a multi-party decentralized application (dApp) built on Cardan
             await hydraTxBuilder.submitTx({ signedTx: signedTx });
         });
 
-        it("Unlock", async function () {
+        it("Unlocks previously locked lovelace from the Hydra contract.", async function () {
             // return;
             const hydraTxBuilder: HydraTxBuilder = new HydraTxBuilder({
                 meshWallet: meshWallet,
