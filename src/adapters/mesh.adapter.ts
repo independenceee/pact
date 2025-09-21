@@ -5,7 +5,6 @@ import {
     MeshTxBuilder,
     MeshWallet,
     PlutusScript,
-    resolveScriptHash,
     scriptAddress,
     serializeAddressObj,
     serializePlutusScript,
@@ -14,7 +13,7 @@ import {
 import { blockfrostProvider } from "~/providers/cardano";
 import plutus from "../../contract/plutus.json";
 import { Plutus } from "~/types";
-import { title } from "~/constants/common";
+import { DECIMAL_PLACE, title } from "~/constants/common";
 import { APP_NETWORK_ID } from "~/constants/enviroments";
 
 /**
@@ -184,6 +183,41 @@ export class MeshAdapter {
                 typeof amount[0].quantity === "string" &&
                 Number(amount[0].quantity) >= 5_000_000
             );
+        })[0];
+    };
+
+    /**
+     * @description
+     * Retrieve the first UTxO containing only Lovelace above a specified minimum threshold.
+     *
+     * This method filters out:
+     * - UTxOs that include any non-ADA assets (e.g., native tokens).
+     * - UTxOs with Lovelace amount smaller than the required threshold.
+     *
+     * Then, it sorts the eligible UTxOs in ascending order and returns the smallest valid one.
+     *
+     * @param {UTxO[]} utxos
+     *        List of available UTxOs to evaluate.
+     *
+     * @param {number} quantity
+     *        Minimum required Lovelace amount. Default is `DECIMAL_PLACE`.
+     *
+     * @returns {UTxO | undefined}
+     *          The first valid Lovelace-only UTxO, or `undefined` if none is found.
+     */
+    public getUTxOOnlyLovelace = ({ utxos, quantity = DECIMAL_PLACE }: { utxos: Array<UTxO>; quantity: number }) => {
+        const filteredUTxOs = utxos.filter((utxo) => {
+            const amount = utxo.output?.amount;
+            if (!Array.isArray(amount) || amount.length !== 1) return false;
+            const { unit, quantity: qty } = amount[0];
+            const quantityNum = Number(qty);
+            return unit === "lovelace" && typeof qty === "string" && !isNaN(quantityNum) && quantityNum >= quantity;
+        });
+
+        return filteredUTxOs.sort((a, b) => {
+            const qtyA = Number(a.output.amount[0].quantity);
+            const qtyB = Number(b.output.amount[0].quantity);
+            return qtyA - qtyB;
         })[0];
     };
 }

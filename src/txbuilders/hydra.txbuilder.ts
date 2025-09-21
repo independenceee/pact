@@ -3,6 +3,14 @@ import { HydraAdapter } from "~/adapters/hydra.adapter";
 import { DECIMAL_PLACE } from "~/constants/common";
 import { APP_NETWORK } from "~/constants/enviroments";
 
+/**
+ * @description
+ * HydraTxBuilder class provides a wrapper around Mesh SDK for:
+ * - Managing Plutus scripts (mint & spend)
+ * - Resolving policy IDs and script addresses
+ * - Handling wallet UTxOs and collaterals
+ * - Preparing data for transaction building
+ */
 export class HydraTxBuilder extends HydraAdapter {
     /**
      * @description Locks a specific amount of lovelace into the Hydra contract address.
