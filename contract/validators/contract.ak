@@ -23,22 +23,7 @@ validator pact {
 
     when redeemer is {
       Contribute { contributor } -> True
-      Disburse -> {
-        let contributed =
-          list.all(
-            participants,
-            fn((_participant, amount)) { amount > required },
-          )
-        let destination_output =
-          find_output(outputs, script_input_lovelace, destination)
-
-        and {
-          contributed,
-          destination_output != None,
-          list.length(script_outputs) == 0,
-          list.length(destination_outputs) == 1,
-        }
-      }
+      Disburse -> True
     }
   }
 
