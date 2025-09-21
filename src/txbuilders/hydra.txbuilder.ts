@@ -108,15 +108,16 @@ export class HydraTxBuilder extends HydraAdapter {
         await this.hydraProvider.connect();
         const { utxos, collateral, walletAddress } = await this.getWalletForHydraTx();
         const utxosSpendAddress = await this.hydraProvider.fetchAddressUTxOs(this.spendAddress);
+
         const pubKeyHash = deserializeAddress(walletAddress).pubKeyHash;
 
         const unsignedTx = this.meshTxBuilder
             .spendingPlutusScriptV3()
-            .txIn(utxosSpendAddress[0].input.txHash, utxosSpendAddress[0].input.outputIndex)
+            .txIn(utxosSpendAddress[1].input.txHash, utxosSpendAddress[1].input.outputIndex)
             .txInInlineDatumPresent()
             .txInRedeemerValue(mConStr1([]))
             .txInScript(this.spendScriptCbor)
-            .txOut(walletAddress, utxosSpendAddress[0].output.amount)
+            .txOut(walletAddress, utxosSpendAddress[1].output.amount)
             .changeAddress(walletAddress)
             .selectUtxosFrom(utxos)
             .setFee(String(0))
