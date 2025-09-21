@@ -35,10 +35,7 @@ export class MeshTxBuilder extends MeshAdapter {
                 .txOut(this.spendAddress, utxoContract.output.amount)
                 .txOutInlineDatumValue(
                     mConStr0([
-                        mTuple(
-                            [mConStr0([pubKeyHash, stakeCredentialHash]), 10 * DECIMAL_PLACE],
-                            [mConStr0([pubKeyHash, stakeCredentialHash]), 10 * DECIMAL_PLACE],
-                        ),
+                        mConStr0([mTuple([mConStr0([pubKeyHash, stakeCredentialHash]), quantity * DECIMAL_PLACE])]),
                         mConStr0([pubKeyHash, stakeCredentialHash]),
                         10 * DECIMAL_PLACE,
                     ]),
@@ -54,10 +51,7 @@ export class MeshTxBuilder extends MeshAdapter {
                 ])
                 .txOutInlineDatumValue(
                     mConStr0([
-                        mTuple(
-                            [mConStr0([pubKeyHash, stakeCredentialHash]), 10 * DECIMAL_PLACE],
-                            [mConStr0([pubKeyHash, stakeCredentialHash]), 10 * DECIMAL_PLACE],
-                        ),
+                        mConStr0([mTuple([mConStr0([pubKeyHash, stakeCredentialHash]), quantity * DECIMAL_PLACE])]),
                         mConStr0([pubKeyHash, stakeCredentialHash]),
                         10 * DECIMAL_PLACE,
                     ]),
@@ -77,6 +71,8 @@ export class MeshTxBuilder extends MeshAdapter {
         const { utxos, collateral, walletAddress } = await this.getWalletForTx();
         const pubKeyHash = deserializeAddress(walletAddress).pubKeyHash;
         const utxo = (await this.fetcher.fetchAddressUTxOs(this.spendAddress))[0];
+
+        console.log(await this.fetcher.fetchAddressUTxOs(this.spendAddress));
 
         const unsignedTx = this.meshTxBuilder
             .spendingPlutusScriptV3()

@@ -7,7 +7,9 @@
         "build": "next build --turbopack",
         "start": "next start",
         "lint": "eslint",
-        "test": "jest --runInBand"
+        "test": "jest --runInBand",
+        "build:contract": "cd ./contract && aiken build",
+        "check:contract": "cd ./contract && aiken check"
     },
     "dependencies": {
         "@meshsdk/core": "^1.9.0-beta.74",
