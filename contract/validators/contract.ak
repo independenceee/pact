@@ -23,7 +23,14 @@ validator pact {
 
     when redeemer is {
       Contribute { contributor } -> True
-      Disburse -> True
+      Disburse -> {
+        let contributed =
+          list.all(
+            participants,
+            fn((_participant, amount)) { amount > required },
+          )
+        contributed
+      }
     }
   }
 

@@ -26,7 +26,7 @@ describe("Save data and read data to participate in the cardano hydra process", 
             meshWallet: meshWallet,
         });
         const unsignedTx: string = await meshTxBuilder.contribute({
-            quantity: 10,
+            quantity: 20,
         });
 
         const signedTx = await meshWallet.signTx(unsignedTx, true);
