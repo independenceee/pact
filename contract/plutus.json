@@ -14,33 +14,235 @@
     {
       "title": "contract.pact.spend",
       "datum": {
-        "title": "_datum",
+        "title": "datum_option",
         "schema": {
-          "$ref": "#/definitions/Data"
+          "$ref": "#/definitions/contract~1types~1Datum"
         }
       },
       "redeemer": {
-        "title": "_redeemer",
+        "title": "redeemer",
         "schema": {
-          "$ref": "#/definitions/Data"
+          "$ref": "#/definitions/contract~1types~1Redeemer"
         }
       },
-      "compiledCode": "585c01010029800aba2aba1aab9eaab9dab9a4888896600264653001300600198031803800cc0180092225980099b8748008c01cdd500144c8cc892898050009805180580098041baa0028b200c180300098019baa0068a4d13656400401",
-      "hash": "d27ccc13fab5b782984a3d1f99353197ca1a81be069941ffc003ee75"
+      "compiledCode": "59017301010029800aba2aba1aba0aab9faab9eaab9dab9a488888896600264653001300800198041804800cc0200092225980099b8748008c01cdd500144ca60026018003300c300d0019b87480012223322598009801800c4c8c96600260280050048b2022375c6024002601c6ea80262b30013370e9001000c566002601c6ea802600516403d1640308060566002600260166ea800a26645300130120029bac301100298091809000cc8cc004004dd61809001112cc004006298103d87a80008992cc004cdd7980a18089baa001008899ba548000cc04c0052f5c11330030033015002403c6026002808922229800980a8024dd6980a980b0024dd6180a8014dd6180a980b180b180b180b180b180b00124444b3001300b3015375400b132598009806180b1baa012899251375c6034602e6ea804a2945015180c980b1baa0058b20280c030dd5180798061baa002300c375400b16402860166ea801c60106ea800a2c8030601000260066ea802229344d9590011",
+      "hash": "bb8e969ba3868e2ea734d0e878b2042481ef9f5f419dd294a59000b0"
     },
     {
       "title": "contract.pact.else",
       "redeemer": {
         "schema": {}
       },
-      "compiledCode": "585c01010029800aba2aba1aab9eaab9dab9a4888896600264653001300600198031803800cc0180092225980099b8748008c01cdd500144c8cc892898050009805180580098041baa0028b200c180300098019baa0068a4d13656400401",
-      "hash": "d27ccc13fab5b782984a3d1f99353197ca1a81be069941ffc003ee75"
+      "compiledCode": "59017301010029800aba2aba1aba0aab9faab9eaab9dab9a488888896600264653001300800198041804800cc0200092225980099b8748008c01cdd500144ca60026018003300c300d0019b87480012223322598009801800c4c8c96600260280050048b2022375c6024002601c6ea80262b30013370e9001000c566002601c6ea802600516403d1640308060566002600260166ea800a26645300130120029bac301100298091809000cc8cc004004dd61809001112cc004006298103d87a80008992cc004cdd7980a18089baa001008899ba548000cc04c0052f5c11330030033015002403c6026002808922229800980a8024dd6980a980b0024dd6180a8014dd6180a980b180b180b180b180b180b00124444b3001300b3015375400b132598009806180b1baa012899251375c6034602e6ea804a2945015180c980b1baa0058b20280c030dd5180798061baa002300c375400b16402860166ea801c60106ea800a2c8030601000260066ea802229344d9590011",
+      "hash": "bb8e969ba3868e2ea734d0e878b2042481ef9f5f419dd294a59000b0"
     }
   ],
   "definitions": {
-    "Data": {
-      "title": "Data",
-      "description": "Any Plutus data."
+    "Int": {
+      "dataType": "integer"
+    },
+    "List$Tuple$cardano/address/Address_Int": {
+      "dataType": "list",
+      "items": {
+        "$ref": "#/definitions/Tuple$cardano~1address~1Address_Int"
+      }
+    },
+    "Option$cardano/address/StakeCredential": {
+      "title": "Option",
+      "anyOf": [
+        {
+          "title": "Some",
+          "description": "An optional value.",
+          "dataType": "constructor",
+          "index": 0,
+          "fields": [
+            {
+              "$ref": "#/definitions/cardano~1address~1StakeCredential"
+            }
+          ]
+        },
+        {
+          "title": "None",
+          "description": "Nothing.",
+          "dataType": "constructor",
+          "index": 1,
+          "fields": []
+        }
+      ]
+    },
+    "Tuple$cardano/address/Address_Int": {
+      "title": "Tuple",
+      "dataType": "list",
+      "items": [
+        {
+          "$ref": "#/definitions/cardano~1address~1Address"
+        },
+        {
+          "$ref": "#/definitions/Int"
+        }
+      ]
+    },
+    "aiken/crypto/ScriptHash": {
+      "title": "ScriptHash",
+      "dataType": "bytes"
+    },
+    "aiken/crypto/VerificationKeyHash": {
+      "title": "VerificationKeyHash",
+      "dataType": "bytes"
+    },
+    "cardano/address/Address": {
+      "title": "Address",
+      "description": "A Cardano `Address` typically holding one or two credential references.\n\n Note that legacy bootstrap addresses (a.k.a. 'Byron addresses') are\n completely excluded from Plutus contexts. Thus, from an on-chain\n perspective only exists addresses of type 00, 01, ..., 07 as detailed\n in [CIP-0019 :: Shelley Addresses](https://github.com/cardano-foundation/CIPs/tree/master/CIP-0019/#shelley-addresses).",
+      "anyOf": [
+        {
+          "title": "Address",
+          "dataType": "constructor",
+          "index": 0,
+          "fields": [
+            {
+              "title": "payment_credential",
+              "$ref": "#/definitions/cardano~1address~1PaymentCredential"
+            },
+            {
+              "title": "stake_credential",
+              "$ref": "#/definitions/Option$cardano~1address~1StakeCredential"
+            }
+          ]
+        }
+      ]
+    },
+    "cardano/address/Credential": {
+      "title": "Credential",
+      "description": "A general structure for representing an on-chain `Credential`.\n\n Credentials are always one of two kinds: a direct public/private key\n pair, or a script (native or Plutus).",
+      "anyOf": [
+        {
+          "title": "VerificationKey",
+          "dataType": "constructor",
+          "index": 0,
+          "fields": [
+            {
+              "$ref": "#/definitions/aiken~1crypto~1VerificationKeyHash"
+            }
+          ]
+        },
+        {
+          "title": "Script",
+          "dataType": "constructor",
+          "index": 1,
+          "fields": [
+            {
+              "$ref": "#/definitions/aiken~1crypto~1ScriptHash"
+            }
+          ]
+        }
+      ]
+    },
+    "cardano/address/PaymentCredential": {
+      "title": "PaymentCredential",
+      "description": "A general structure for representing an on-chain `Credential`.\n\n Credentials are always one of two kinds: a direct public/private key\n pair, or a script (native or Plutus).",
+      "anyOf": [
+        {
+          "title": "VerificationKey",
+          "dataType": "constructor",
+          "index": 0,
+          "fields": [
+            {
+              "$ref": "#/definitions/aiken~1crypto~1VerificationKeyHash"
+            }
+          ]
+        },
+        {
+          "title": "Script",
+          "dataType": "constructor",
+          "index": 1,
+          "fields": [
+            {
+              "$ref": "#/definitions/aiken~1crypto~1ScriptHash"
+            }
+          ]
+        }
+      ]
+    },
+    "cardano/address/StakeCredential": {
+      "title": "StakeCredential",
+      "description": "Represent a type of object that can be represented either inline (by hash)\n or via a reference (i.e. a pointer to an on-chain location).\n\n This is mainly use for capturing pointers to a stake credential\n registration certificate in the case of so-called pointer addresses.",
+      "anyOf": [
+        {
+          "title": "Inline",
+          "dataType": "constructor",
+          "index": 0,
+          "fields": [
+            {
+              "$ref": "#/definitions/cardano~1address~1Credential"
+            }
+          ]
+        },
+        {
+          "title": "Pointer",
+          "dataType": "constructor",
+          "index": 1,
+          "fields": [
+            {
+              "title": "slot_number",
+              "$ref": "#/definitions/Int"
+            },
+            {
+              "title": "transaction_index",
+              "$ref": "#/definitions/Int"
+            },
+            {
+              "title": "certificate_index",
+              "$ref": "#/definitions/Int"
+            }
+          ]
+        }
+      ]
+    },
+    "contract/types/Datum": {
+      "title": "Datum",
+      "anyOf": [
+        {
+          "title": "Datum",
+          "dataType": "constructor",
+          "index": 0,
+          "fields": [
+            {
+              "title": "participants",
+              "$ref": "#/definitions/List$Tuple$cardano~1address~1Address_Int"
+            },
+            {
+              "title": "destination",
+              "$ref": "#/definitions/cardano~1address~1Address"
+            },
+            {
+              "title": "required",
+              "$ref": "#/definitions/Int"
+            }
+          ]
+        }
+      ]
+    },
+    "contract/types/Redeemer": {
+      "title": "Redeemer",
+      "anyOf": [
+        {
+          "title": "Contribute",
+          "dataType": "constructor",
+          "index": 0,
+          "fields": [
+            {
+              "title": "contributor",
+              "$ref": "#/definitions/aiken~1crypto~1VerificationKeyHash"
+            }
+          ]
+        },
+        {
+          "title": "Disburse",
+          "dataType": "constructor",
+          "index": 1,
+          "fields": []
+        }
+      ]
     }
   }
 }
