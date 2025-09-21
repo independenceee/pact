@@ -1,7 +1,7 @@
 import { MeshWallet } from "@meshsdk/core";
 import { HydraProvider } from "@meshsdk/hydra";
 import { APP_NETWORK_ID, HYDRA_HTTP_URL, HYDRA_WS_URL, HYDRA_HTTP_URL_SUB, HYDRA_WS_URL_SUB } from "~/constants/enviroments";
-import { blockfrostProvider } from "~/providers/cardano";
+import { blockfrostProvider } from "~/libs/cardano";
 import { HydraTxBuilder } from "~/txbuilders/hydra.txbuilder";
 
 describe("Pact is a multi-party decentralized application (dApp) built on Cardano’s Hydra Head, designed to enable groups of people to safely pool funds for a shared goal (e.g., co-purchasing an NFT, funding a small project, or creating a community treasury).", function () {

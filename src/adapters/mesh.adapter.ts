@@ -10,7 +10,7 @@ import {
     serializePlutusScript,
     UTxO,
 } from "@meshsdk/core";
-import { blockfrostProvider } from "~/providers/cardano";
+import { blockfrostProvider } from "~/libs/cardano";
 import plutus from "../../contract/plutus.json";
 import { Plutus } from "~/types";
 import { DECIMAL_PLACE, title } from "~/constants/common";
