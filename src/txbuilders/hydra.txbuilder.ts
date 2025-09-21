@@ -1,4 +1,4 @@
-import { mConStr0 } from "@meshsdk/core";
+import { mConStr0, deserializeAddress, list, mTuple, mConStr1 } from "@meshsdk/core";
 import { HydraAdapter } from "~/adapters/hydra.adapter";
 import { DECIMAL_PLACE } from "~/constants/common";
 import { APP_NETWORK } from "~/constants/enviroments";
@@ -15,14 +15,13 @@ export class HydraTxBuilder extends HydraAdapter {
      * @returns {Promise<any>} - An unsigned transaction object ready to be signed and submitted.
      *
      * @throws {Error} - Throws if UTxOs are insufficient or wallet address cannot be retrieved.
-     *
-     * @example
-     * const tx = await hydraTxBuilder.lock({ amount: 50 });
-     * // Sign and submit transaction...
      */
     lock = async ({ amount = 10 }: { amount: number }) => {
         await this.hydraProvider.connect();
         const { utxos, collateral, walletAddress } = await this.getWalletForHydraTx();
+        const pubKeyHash = deserializeAddress(walletAddress).pubKeyHash;
+        const stakeCredentialHash = deserializeAddress(walletAddress).stakeCredentialHash;
+
         const utxo = this.getUTxOOnlyLovelace({
             utxos: utxos,
             quantity: amount,
@@ -36,8 +35,17 @@ export class HydraTxBuilder extends HydraAdapter {
                     quantity: String(amount * DECIMAL_PLACE),
                 },
             ])
-            .txOutInlineDatumValue(mConStr0([]))
-            .changeAddress(await this.meshWallet.getChangeAddress())
+            .txOutInlineDatumValue(
+                mConStr0([
+                    mTuple(
+                        [mConStr0([pubKeyHash, stakeCredentialHash]), 10 * DECIMAL_PLACE],
+                        [mConStr0([pubKeyHash, stakeCredentialHash]), 10 * DECIMAL_PLACE],
+                    ),
+                    mConStr0([pubKeyHash, stakeCredentialHash]),
+                    10 * DECIMAL_PLACE,
+                ]),
+            )
+            .changeAddress(walletAddress)
             .selectUtxosFrom(utxos)
             .txInCollateral(collateral.input.txHash, collateral.input.outputIndex, collateral.output.amount, collateral.output.address)
             .setFee(String(0))
@@ -63,16 +71,56 @@ export class HydraTxBuilder extends HydraAdapter {
     unLock = async () => {
         await this.hydraProvider.connect();
         const { utxos, collateral, walletAddress } = await this.getWalletForHydraTx();
+        const pubKeyHash = deserializeAddress(walletAddress).pubKeyHash;
         const utxosSpendAddress = await this.hydraProvider.fetchAddressUTxOs(this.spendAddress);
+        console.log(utxosSpendAddress[2]);
+
+        const unsignedTx = this.meshTxBuilder
+
+            .spendingPlutusScriptV3()
+            .txIn(utxosSpendAddress[2].input.txHash, utxosSpendAddress[2].input.outputIndex)
+            .txInInlineDatumPresent()
+            .txInRedeemerValue(mConStr0([pubKeyHash]))
+            .txInScript(this.spendScriptCbor)
+            .txOut(walletAddress, utxosSpendAddress[2].output.amount)
+
+            .txInCollateral(collateral.input.txHash, collateral.input.outputIndex, collateral.output.amount, collateral.output.address)
+            .requiredSignerHash(pubKeyHash)
+            .changeAddress(walletAddress)
+            .setNetwork(APP_NETWORK)
+            .selectUtxosFrom(utxos)
+            .setFee(String(0));
+
+        return await unsignedTx.complete();
+    };
+
+    /**
+     * @description Removes previously locked lovelace from the Hydra contract.
+     * This function prepares a transaction that spends the UTxO locked at the
+     * Hydra contract address using the provided Plutus script and redeemer.
+     *
+     * @returns {Promise<any>} - An unsigned transaction object ready to be signed and submitted.
+     *
+     * @throws {Error} - Throws if UTxOs are insufficient, collateral is missing,
+     * or contract UTxOs cannot be retrieved.
+     */
+    removes = async () => {
+        await this.hydraProvider.connect();
+        const { utxos, collateral, walletAddress } = await this.getWalletForHydraTx();
+        const utxosSpendAddress = await this.hydraProvider.fetchAddressUTxOs(this.spendAddress);
+        const pubKeyHash = deserializeAddress(walletAddress).pubKeyHash;
+
         const unsignedTx = this.meshTxBuilder
             .spendingPlutusScriptV3()
             .txIn(utxosSpendAddress[0].input.txHash, utxosSpendAddress[0].input.outputIndex)
             .txInInlineDatumPresent()
-            .txInRedeemerValue(mConStr0([]))
+            .txInRedeemerValue(mConStr1([]))
             .txInScript(this.spendScriptCbor)
+            .txOut(walletAddress, utxosSpendAddress[0].output.amount)
             .changeAddress(walletAddress)
             .selectUtxosFrom(utxos)
             .setFee(String(0))
+            .requiredSignerHash(pubKeyHash)
             .txInCollateral(collateral.input.txHash, collateral.input.outputIndex, collateral.output.amount, collateral.output.address)
             .setNetwork(APP_NETWORK);
 
