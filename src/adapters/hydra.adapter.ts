@@ -12,7 +12,7 @@ import {
 } from "@meshsdk/core";
 import { HydraInstance, HydraProvider } from "@meshsdk/hydra";
 import { DECIMAL_PLACE, title } from "~/constants/common";
-import { blockfrostProvider } from "~/providers/cardano";
+import { blockfrostProvider } from "~/libs/cardano";
 import plutus from "../../contract/plutus.json";
 import { Plutus } from "~/types";
 import { APP_NETWORK_ID } from "~/constants/enviroments";

@@ -1,9 +1,7 @@
 use aiken/collection/list
 use cardano/address.{Address}
-use cardano/assets.{AssetName, PolicyId, flatten, lovelace_of, without_lovelace}
-use cardano/transaction.{
-  InlineDatum, Output, OutputReference, Transaction, find_input,
-}
+use cardano/assets.{lovelace_of}
+use cardano/transaction.{Output}
 
 // find output with lovelace and address
 pub fn find_output(
