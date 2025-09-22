@@ -1,4 +1,4 @@
-import { deserializeAddress, ForgeScript, mConStr0, mConStr1, mTuple, resolveScriptHash, stringToHex, UTxO } from "@meshsdk/core";
+import { deserializeAddress, mConStr0, mConStr1, mTuple, MTuple, list } from "@meshsdk/core";
 import { MeshAdapter } from "~/adapters/mesh.adapter";
 import { DECIMAL_PLACE } from "~/constants/common";
 import { APP_NETWORK } from "~/constants/enviroments";
@@ -35,7 +35,12 @@ export class MeshTxBuilder extends MeshAdapter {
                 .txOut(this.spendAddress, utxoContract.output.amount)
                 .txOutInlineDatumValue(
                     mConStr0([
-                        mConStr0([mTuple([mConStr0([pubKeyHash, stakeCredentialHash]), quantity * DECIMAL_PLACE])]),
+                        mTuple([
+                            mConStr0([pubKeyHash, stakeCredentialHash]),
+                            quantity * DECIMAL_PLACE,
+                            mConStr0([pubKeyHash, stakeCredentialHash]),
+                            quantity * DECIMAL_PLACE,
+                        ]),
                         mConStr0([pubKeyHash, stakeCredentialHash]),
                         10 * DECIMAL_PLACE,
                     ]),
@@ -51,7 +56,12 @@ export class MeshTxBuilder extends MeshAdapter {
                 ])
                 .txOutInlineDatumValue(
                     mConStr0([
-                        mConStr0([mTuple([mConStr0([pubKeyHash, stakeCredentialHash]), quantity * DECIMAL_PLACE])]),
+                        mTuple([
+                            mConStr0([pubKeyHash, stakeCredentialHash]),
+                            quantity * DECIMAL_PLACE,
+                            mConStr0([pubKeyHash, stakeCredentialHash]),
+                            quantity * DECIMAL_PLACE,
+                        ]),
                         mConStr0([pubKeyHash, stakeCredentialHash]),
                         10 * DECIMAL_PLACE,
                     ]),
