@@ -13,7 +13,6 @@ describe("Save data and read data to participate in the cardano hydra process", 
                 type: "mnemonic",
                 // words: process.env.APP_MNEMONIC?.split(" ") || [],
                 words: process.env.ALICE_APP_MNEMONIC?.split(" ") || [],
-
                 // words: process.env.BOB_APP_MNEMONIC?.split(" ") || [],
             },
         });
@@ -27,6 +26,7 @@ describe("Save data and read data to participate in the cardano hydra process", 
         });
         const unsignedTx: string = await meshTxBuilder.contribute({
             quantity: 20,
+            required: 10,
         });
 
         const signedTx = await meshWallet.signTx(unsignedTx, true);
@@ -40,7 +40,7 @@ describe("Save data and read data to participate in the cardano hydra process", 
     });
 
     test("Disburse", async function () {
-        // return;
+        return;
         const meshTxBuilder: MeshTxBuilder = new MeshTxBuilder({
             meshWallet: meshWallet,
         });

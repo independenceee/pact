@@ -1,6 +1,12 @@
 import { MeshWallet } from "@meshsdk/core";
 import { HydraProvider } from "@meshsdk/hydra";
-import { APP_NETWORK_ID, HYDRA_HTTP_URL, HYDRA_WS_URL, HYDRA_HTTP_URL_SUB, HYDRA_WS_URL_SUB } from "~/constants/enviroments";
+import {
+    APP_NETWORK_ID,
+    HYDRA_HTTP_URL,
+    HYDRA_WS_URL,
+    HYDRA_HTTP_URL_SUB,
+    HYDRA_WS_URL_SUB,
+} from "~/constants/enviroments";
 import { blockfrostProvider } from "~/libs/cardano";
 import { HydraTxBuilder } from "~/txbuilders/hydra.txbuilder";
 
@@ -117,8 +123,6 @@ describe("Pact is a multi-party decentralized application (dApp) built on Cardan
             const commitSignedTx = await meshWallet.signTx(commitUnsignedTx, true);
             const commitTxHash = await meshWallet.submitTx(commitSignedTx);
             console.log("https://preview.cexplorer.io/tx/" + commitTxHash);
-            const snapshotUtxos = await hydraProvider.subscribeSnapshotUtxo();
-            console.log(snapshotUtxos);
         });
 
         it("2- Commit UTXOs into the Hydra head to make them available for off-chain transactions.", async () => {
@@ -162,34 +166,20 @@ describe("Pact is a multi-party decentralized application (dApp) built on Cardan
                 hydraProvider: hydraProvider,
             });
             await hydraTxBuilder.initialize();
-
-            const unsignedTx: string = await hydraTxBuilder.lock({ amount: 20 });
+            const unsignedTx: string = await hydraTxBuilder.contribute({ quantity: 20, required: 20 });
             const signedTx: string = await meshWallet.signTx(unsignedTx, true);
             await hydraTxBuilder.submitTx({ signedTx: signedTx });
         });
 
         it("Unlocks previously locked lovelace from the Hydra contract.", async function () {
-            return;
+            // return;
             const hydraTxBuilder: HydraTxBuilder = new HydraTxBuilder({
                 meshWallet: meshWallet,
                 hydraProvider: hydraProvider,
             });
             await hydraTxBuilder.initialize();
 
-            const unsignedTx: string = await hydraTxBuilder.unLock();
-            const signedTx: string = await meshWallet.signTx(unsignedTx, true);
-            await hydraTxBuilder.submitTx({ signedTx: signedTx });
-        });
-
-        it("Removes previously locked lovelace from the Hydra contract.", async function () {
-            return;
-            const hydraTxBuilder: HydraTxBuilder = new HydraTxBuilder({
-                meshWallet: meshWallet,
-                hydraProvider: hydraProvider,
-            });
-            await hydraTxBuilder.initialize();
-
-            const unsignedTx: string = await hydraTxBuilder.removes();
+            const unsignedTx: string = await hydraTxBuilder.disburse();
             const signedTx: string = await meshWallet.signTx(unsignedTx, true);
             await hydraTxBuilder.submitTx({ signedTx: signedTx });
         });

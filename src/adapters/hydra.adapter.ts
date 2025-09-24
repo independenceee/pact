@@ -7,8 +7,10 @@ import {
     PlutusScript,
     scriptAddress,
     serializeAddressObj,
+    pubKeyAddress,
     UTxO,
     serializePlutusScript,
+    deserializeDatum,
 } from "@meshsdk/core";
 import { HydraInstance, HydraProvider } from "@meshsdk/hydra";
 import { DECIMAL_PLACE, title } from "~/constants/common";
@@ -201,6 +203,26 @@ export class HydraAdapter {
                     reject(error);
                 }
             });
+
+            this.hydraProvider.onMessage((message) => {
+                try {
+                    if (message.tag === "HeadIsFinalized") {
+                        resolve();
+                    }
+                } catch (error) {
+                    reject(error);
+                }
+            });
+
+            this.hydraProvider.onStatusChange((status) => {
+                try {
+                    if (status === "FINAL") {
+                        resolve();
+                    }
+                } catch (error) {
+                    reject(error);
+                }
+            });
         });
     };
 
@@ -224,6 +246,25 @@ export class HydraAdapter {
         await this.hydraProvider.connect();
         await new Promise<void>((resolve, reject) => {
             this.hydraProvider.fanout().catch((error: Error) => reject(error));
+
+            this.hydraProvider.onMessage((message) => {
+                try {
+                    if (message.tag === "ReadyToFanout") {
+                        resolve();
+                    }
+                } catch (error) {
+                    reject(error);
+                }
+            });
+            this.hydraProvider.onStatusChange((status) => {
+                try {
+                    if (status === "FANOUT_POSSIBLE") {
+                        resolve();
+                    }
+                } catch (error) {
+                    reject(error);
+                }
+            });
 
             this.hydraProvider.onMessage((message) => {
                 try {
@@ -591,5 +632,95 @@ export class HydraAdapter {
             collateral: collateral,
             walletAddress: walletAddress,
         };
+    };
+
+    /**
+     * @description
+     * Retrieve wallet essentials for building a transaction:
+     * - Available UTxOs
+     * - A valid collateral UTxO (>= 5 ADA in lovelace)
+     * - Wallet's change address
+     *
+     * Flow:
+     * 1. Get all wallet UTxOs.
+     * 2. Ensure collateral exists (create one if missing).
+     * 3. Get wallet change address.
+     *
+     * @returns {Promise<{ utxos: UTxO[]; collateral: UTxO; walletAddress: string }>}
+     *          Object containing wallet UTxOs, a collateral UTxO, and change address.
+     *
+     * @throws {Error}
+     *         If UTxOs or wallet address cannot be retrieved.
+     */
+    protected getParticipantsForHydraTx = async (): Promise<Array<string>> => {
+        try {
+            const utxos = await this.hydraProvider.fetchUTxOs();
+            if (!utxos || !Array.isArray(utxos)) {
+                throw new Error("Failed to fetch valid UTxOs");
+            }
+
+            const addresses = utxos
+                .map((utxo) => utxo.output.address)
+                .filter((address): address is string => typeof address === "string")
+                .map((address) => address)
+                .filter((value, index, self) => index === self.findIndex((address) => address === value));
+
+            return addresses;
+        } catch (error) {
+            throw new Error("Unable to retrieve participants for Hydra transaction");
+        }
+    };
+
+    /**
+     * @description
+     * Retrieve wallet essentials for building a transaction:
+     * - Available UTxOs
+     * - A valid collateral UTxO (>= 5 ADA in lovelace)
+     * - Wallet's change address
+     *
+     * Flow:
+     * 1. Get all wallet UTxOs.
+     * 2. Ensure collateral exists (create one if missing).
+     * 3. Get wallet change address.
+     *
+     * @returns {Promise<{ utxos: UTxO[]; collateral: UTxO; walletAddress: string }>}
+     *          Object containing wallet UTxOs, a collateral UTxO, and change address.
+     *
+     * @throws {Error}
+     *         If UTxOs or wallet address cannot be retrieved.
+     */
+    protected convertDatum = ({
+        plutusData,
+    }: {
+        plutusData: string;
+    }): {
+        participants: Array<{ walletAddress: string; amount: number }>;
+        destination: string;
+        required: number;
+    } => {
+        try {
+            const datum = deserializeDatum(plutusData);
+            const destination = serializeAddressObj(
+                pubKeyAddress(datum.fields[1].fields[0].bytes, datum.fields[1].fields[1].bytes, false),
+                APP_NETWORK_ID,
+            );
+
+            const participants = datum.fields[0].list.map((item: any) => {
+                const [pubKeyHash, stakeCredentialHash] = item.list[0].fields.map((f: any) => f.bytes);
+                const amount = Number(item.list[1].int);
+                return {
+                    walletAddress: serializeAddressObj(pubKeyAddress(pubKeyHash, stakeCredentialHash, false), APP_NETWORK_ID),
+                    amount: amount,
+                };
+            });
+
+            return {
+                participants: participants,
+                destination: destination,
+                required: Number(datum.fields[2].int),
+            };
+        } catch (error) {
+            throw new Error(String(error));
+        }
     };
 }

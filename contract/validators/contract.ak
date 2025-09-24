@@ -27,7 +27,7 @@ validator pact {
         let contributed =
           list.all(
             participants,
-            fn((_participant, amount)) { amount > required },
+            fn((_participant, amount)) { amount >= required },
           )
         contributed
       }
