@@ -1,4 +1,4 @@
-import { mConStr0, deserializeAddress, list, mTuple, mConStr1 } from "@meshsdk/core";
+import { mConStr0, deserializeAddress, mTuple, mConStr1 } from "@meshsdk/core";
 import { HydraAdapter } from "~/adapters/hydra.adapter";
 import { DECIMAL_PLACE } from "~/constants/common";
 import { APP_NETWORK } from "~/constants/enviroments";
@@ -26,8 +26,8 @@ export class HydraTxBuilder extends HydraAdapter {
      */
     contribute = async ({
         destination,
-        required = 10,
-        quantity = 1,
+        required = 1_000,
+        quantity = 1_000,
     }: {
         destination?: string;
         required?: number;
@@ -63,12 +63,14 @@ export class HydraTxBuilder extends HydraAdapter {
                 .txOutInlineDatumValue(
                     mConStr0([
                         mTuple(
-                            ...datum.participants.map(({ walletAddress, amount }) => [
+                            ...datum.participants.map((participant) => [
                                 mConStr0([
-                                    deserializeAddress(walletAddress).pubKeyHash,
-                                    deserializeAddress(walletAddress).stakeCredentialHash,
+                                    deserializeAddress(participant.walletAddress).pubKeyHash,
+                                    deserializeAddress(participant.walletAddress).stakeCredentialHash,
                                 ]),
-                                amount,
+                                participant.walletAddress === walletAddress
+                                    ? participant.amount + quantity
+                                    : participant.amount,
                             ]),
                         ),
                         mConStr0([
@@ -87,12 +89,14 @@ export class HydraTxBuilder extends HydraAdapter {
                 .txOutInlineDatumValue(
                     mConStr0([
                         mTuple(
-                            ...datum.participants.map(({ walletAddress, amount }) => [
+                            ...datum.participants.map((participant) => [
                                 mConStr0([
-                                    deserializeAddress(walletAddress).pubKeyHash,
-                                    deserializeAddress(walletAddress).stakeCredentialHash,
+                                    deserializeAddress(participant.walletAddress).pubKeyHash,
+                                    deserializeAddress(participant.walletAddress).stakeCredentialHash,
                                 ]),
-                                amount,
+                                participant.walletAddress === walletAddress
+                                    ? participant.amount + quantity
+                                    : participant.amount,
                             ]),
                         ),
                         mConStr0([
@@ -176,19 +180,30 @@ export class HydraTxBuilder extends HydraAdapter {
         await this.hydraProvider.connect();
         const { utxos, collateral, walletAddress } = await this.getWalletForHydraTx();
         const pubKeyHash = deserializeAddress(walletAddress).pubKeyHash;
-        const utxoContract = (await this.hydraProvider.fetchAddressUTxOs(this.spendAddress))[0];
+        const utxosContract = await this.hydraProvider.fetchAddressUTxOs(this.spendAddress);
+        // const datum = this.convertDatum({
+        //     plutusData: utxosContract[0].output.dataHash as string,
+        // });
+        const unsignedTx = this.meshTxBuilder;
+        // utxosContract.forEach((utxo) => {
+        //     unsignedTx
+        //         .spendingPlutusScriptV3()
+        //         .txIn(utxo.input.txHash, utxo.input.outputIndex)
+        //         .txInInlineDatumPresent()
+        //         .txInRedeemerValue(mConStr1([]))
+        //         .txInScript(this.spendScriptCbor)
+        //         .txOut(datum.destination, utxo.output.amount);
+        // });
 
-        const participants = this.convertDatum({ plutusData: utxoContract.output.plutusData as string });
-        console.log(participants);
-
-        const unsignedTx = this.meshTxBuilder
-
+        unsignedTx
             .spendingPlutusScriptV3()
-            .txIn(utxoContract.input.txHash, utxoContract.input.outputIndex)
+            .txIn(utxosContract[0].input.txHash, utxosContract[0].input.outputIndex)
             .txInInlineDatumPresent()
             .txInRedeemerValue(mConStr1([]))
             .txInScript(this.spendScriptCbor)
-            .txOut(walletAddress, utxoContract.output.amount)
+            .txOut(walletAddress, utxosContract[0].output.amount);
+
+        unsignedTx
             .txInCollateral(
                 collateral.input.txHash,
                 collateral.input.outputIndex,

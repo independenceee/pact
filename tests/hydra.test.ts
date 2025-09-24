@@ -12,8 +12,8 @@ import { HydraTxBuilder } from "~/txbuilders/hydra.txbuilder";
 
 describe("Pact is a multi-party decentralized application (dApp) built on Cardano’s Hydra Head, designed to enable groups of people to safely pool funds for a shared goal (e.g., co-purchasing an NFT, funding a small project, or creating a community treasury).", function () {
     let meshWallet: MeshWallet;
-    let isCreator: boolean = true; // Use for Alice
-    // let isCreator: boolean = false; // Use for Bob
+    // let isCreator: boolean = true; // Use for Alice
+    let isCreator: boolean = false; // Use for Bob
     let hydraProvider: HydraProvider;
 
     beforeEach(async function () {
@@ -24,8 +24,8 @@ describe("Pact is a multi-party decentralized application (dApp) built on Cardan
             key: {
                 type: "mnemonic",
                 // words: process.env.APP_MNEMONIC?.split(" ") || [],
-                // words: process.env.BOB_APP_MNEMONIC?.split(" ") || [],
-                words: process.env.ALICE_APP_MNEMONIC?.split(" ") || [],
+                words: process.env.BOB_APP_MNEMONIC?.split(" ") || [],
+                // words: process.env.ALICE_APP_MNEMONIC?.split(" ") || [],
             },
         });
 
@@ -160,13 +160,13 @@ describe("Pact is a multi-party decentralized application (dApp) built on Cardan
 
     describe("Hydra interaction with smartcontract", function () {
         it("Locks a specific amount of lovelace into the Hydra contract address.", async function () {
-            // return;
+            return;
             const hydraTxBuilder: HydraTxBuilder = new HydraTxBuilder({
                 meshWallet: meshWallet,
                 hydraProvider: hydraProvider,
             });
             await hydraTxBuilder.initialize();
-            const unsignedTx: string = await hydraTxBuilder.contribute({ quantity: 10, required: 10 });
+            const unsignedTx: string = await hydraTxBuilder.contribute({ quantity: 20, required: 20 });
             const signedTx: string = await meshWallet.signTx(unsignedTx, true);
             await hydraTxBuilder.submitTx({ signedTx: signedTx });
         });
