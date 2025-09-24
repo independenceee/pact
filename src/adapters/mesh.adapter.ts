@@ -1,10 +1,12 @@
 import {
     applyParamsToScript,
     deserializeAddress,
+    deserializeDatum,
     IFetcher,
     MeshTxBuilder,
     MeshWallet,
     PlutusScript,
+    pubKeyAddress,
     scriptAddress,
     serializeAddressObj,
     serializePlutusScript,
@@ -62,7 +64,8 @@ export class MeshAdapter {
 
         this.spendAddress = serializeAddressObj(
             scriptAddress(
-                deserializeAddress(serializePlutusScript(this.spendScript, undefined, APP_NETWORK_ID, false).address).scriptHash,
+                deserializeAddress(serializePlutusScript(this.spendScript, undefined, APP_NETWORK_ID, false).address)
+                    .scriptHash,
                 "",
                 false,
             ),
@@ -95,7 +98,9 @@ export class MeshAdapter {
     }> => {
         const utxos = await this.meshWallet.getUtxos();
         const collaterals =
-            (await this.meshWallet.getCollateral()).length === 0 ? [await this.getCollateral()] : await this.meshWallet.getCollateral();
+            (await this.meshWallet.getCollateral()).length === 0
+                ? [await this.getCollateral()]
+                : await this.meshWallet.getCollateral();
         const walletAddress = await this.meshWallet.getChangeAddress();
         if (!utxos || utxos.length === 0) throw new Error("No UTXOs found in getWalletForTx method.");
 
@@ -219,5 +224,61 @@ export class MeshAdapter {
             const qtyB = Number(b.output.amount[0].quantity);
             return qtyA - qtyB;
         })[0];
+    };
+
+    /**
+     * @description
+     * Retrieve wallet essentials for building a transaction:
+     * - Available UTxOs
+     * - A valid collateral UTxO (>= 5 ADA in lovelace)
+     * - Wallet's change address
+     *
+     * Flow:
+     * 1. Get all wallet UTxOs.
+     * 2. Ensure collateral exists (create one if missing).
+     * 3. Get wallet change address.
+     *
+     * @returns {Promise<{ utxos: UTxO[]; collateral: UTxO; walletAddress: string }>}
+     *          Object containing wallet UTxOs, a collateral UTxO, and change address.
+     *
+     * @throws {Error}
+     *         If UTxOs or wallet address cannot be retrieved.
+     */
+    protected convertDatum = ({
+        plutusData,
+    }: {
+        plutusData: string;
+    }): {
+        participants: Array<{ walletAddress: string; amount: number }>;
+        destination: string;
+        required: number;
+    } => {
+        try {
+            const datum = deserializeDatum(plutusData);
+            const destination = serializeAddressObj(
+                pubKeyAddress(datum.fields[1].fields[0].bytes, datum.fields[1].fields[1].bytes, false),
+                APP_NETWORK_ID,
+            );
+
+            const participants = datum.fields[0].list.map((item: any) => {
+                const [pubKeyHash, stakeCredentialHash] = item.list[0].fields.map((f: any) => f.bytes);
+                const amount = Number(item.list[1].int);
+                return {
+                    walletAddress: serializeAddressObj(
+                        pubKeyAddress(pubKeyHash, stakeCredentialHash, false),
+                        APP_NETWORK_ID,
+                    ),
+                    amount: amount,
+                };
+            });
+
+            return {
+                participants: participants,
+                destination: destination,
+                required: Number(datum.fields[2].int),
+            };
+        } catch (error) {
+            throw new Error(String(error));
+        }
     };
 }

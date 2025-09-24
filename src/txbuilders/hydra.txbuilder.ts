@@ -24,21 +24,92 @@ export class HydraTxBuilder extends HydraAdapter {
      *
      * @throws {Error} - Throws if UTxOs are insufficient or wallet address cannot be retrieved.
      */
-    contribute = async ({ destination, required = 10, quantity = 0 }: { destination?: string; required?: number; quantity?: number }) => {
+    contribute = async ({
+        destination,
+        required = 10,
+        quantity = 1,
+    }: {
+        destination?: string;
+        required?: number;
+        quantity?: number;
+    }) => {
         await this.hydraProvider.connect();
         const { utxos, collateral, walletAddress } = await this.getWalletForHydraTx();
         const pubKeyHash = deserializeAddress(walletAddress).pubKeyHash;
-        const stakeCredentialHash = deserializeAddress(walletAddress).stakeCredentialHash;
-        const utxoContract = (await this.fetcher.fetchAddressUTxOs(this.spendAddress))[0];
 
+        const utxoContract = (await this.hydraProvider.fetchAddressUTxOs(this.spendAddress))[0];
+        const utxoInput = this.getUTxOOnlyLovelace({
+            utxos: utxos,
+            quantity: quantity * DECIMAL_PLACE,
+        });
         const unsignedTx = this.meshTxBuilder;
         if (utxoContract) {
+            const datum = this.convertDatum({
+                plutusData: utxoContract.output.plutusData as string,
+            });
+            unsignedTx
+                .txIn(utxoInput.input.txHash, utxoInput.input.outputIndex)
+                .spendingPlutusScriptV3()
+                .txIn(utxoContract.input.txHash, utxoContract.input.outputIndex)
+                .txInInlineDatumPresent()
+                .txInRedeemerValue(mConStr0([pubKeyHash]))
+                .txInScript(this.spendScriptCbor)
+                .txOut(this.spendAddress, [
+                    {
+                        unit: "lovelace",
+                        quantity: String(Number(utxoContract.output.amount[0].quantity)),
+                    },
+                ])
+                .txOutInlineDatumValue(
+                    mConStr0([
+                        mTuple(
+                            ...datum.participants.map(({ walletAddress, amount }) => [
+                                mConStr0([
+                                    deserializeAddress(walletAddress).pubKeyHash,
+                                    deserializeAddress(walletAddress).stakeCredentialHash,
+                                ]),
+                                amount,
+                            ]),
+                        ),
+                        mConStr0([
+                            deserializeAddress(datum.destination).pubKeyHash,
+                            deserializeAddress(datum.destination).stakeCredentialHash,
+                        ]),
+                        datum.required,
+                    ]),
+                )
+                .txOut(this.spendAddress, [
+                    {
+                        unit: "lovelace",
+                        quantity: String(quantity * DECIMAL_PLACE),
+                    },
+                ])
+                .txOutInlineDatumValue(
+                    mConStr0([
+                        mTuple(
+                            ...datum.participants.map(({ walletAddress, amount }) => [
+                                mConStr0([
+                                    deserializeAddress(walletAddress).pubKeyHash,
+                                    deserializeAddress(walletAddress).stakeCredentialHash,
+                                ]),
+                                amount,
+                            ]),
+                        ),
+                        mConStr0([
+                            deserializeAddress(datum.destination).pubKeyHash,
+                            deserializeAddress(datum.destination).stakeCredentialHash,
+                        ]),
+                        datum.required,
+                    ]),
+                )
+                .txOut(walletAddress, [
+                    {
+                        unit: "lovelace",
+                        quantity: String(Number(utxoInput.output.amount[0].quantity) - quantity * DECIMAL_PLACE),
+                    },
+                ]);
         } else {
             const participants = await this.getParticipantsForHydraTx();
-            const utxoInput = this.getUTxOOnlyLovelace({
-                utxos: utxos,
-                quantity: quantity,
-            });
             unsignedTx
                 .txIn(utxoInput.input.txHash, utxoInput.input.outputIndex)
                 .txOut(this.spendAddress, [
@@ -50,12 +121,13 @@ export class HydraTxBuilder extends HydraAdapter {
                 .txOutInlineDatumValue(
                     mConStr0([
                         mTuple(
-                            participants.map(
-                                (participant) => (
-                                    mConStr0([deserializeAddress(participant).pubKeyHash, deserializeAddress(participant).stakeCredentialHash]),
-                                    quantity * DECIMAL_PLACE
-                                ),
-                            ),
+                            ...participants.map((participant) => [
+                                mConStr0([
+                                    deserializeAddress(participant).pubKeyHash,
+                                    deserializeAddress(participant).stakeCredentialHash,
+                                ]),
+                                required * DECIMAL_PLACE,
+                            ]),
                         ),
                         mConStr0([
                             deserializeAddress(destination || walletAddress).pubKeyHash,
@@ -74,7 +146,12 @@ export class HydraTxBuilder extends HydraAdapter {
         unsignedTx
             .changeAddress(walletAddress)
             .selectUtxosFrom(utxos)
-            .txInCollateral(collateral.input.txHash, collateral.input.outputIndex, collateral.output.amount, collateral.output.address)
+            .txInCollateral(
+                collateral.input.txHash,
+                collateral.input.outputIndex,
+                collateral.output.amount,
+                collateral.output.address,
+            )
             .setFee(String(0))
             .setNetwork(APP_NETWORK);
 
@@ -101,6 +178,9 @@ export class HydraTxBuilder extends HydraAdapter {
         const pubKeyHash = deserializeAddress(walletAddress).pubKeyHash;
         const utxoContract = (await this.hydraProvider.fetchAddressUTxOs(this.spendAddress))[0];
 
+        const participants = this.convertDatum({ plutusData: utxoContract.output.plutusData as string });
+        console.log(participants);
+
         const unsignedTx = this.meshTxBuilder
 
             .spendingPlutusScriptV3()
@@ -109,8 +189,12 @@ export class HydraTxBuilder extends HydraAdapter {
             .txInRedeemerValue(mConStr1([]))
             .txInScript(this.spendScriptCbor)
             .txOut(walletAddress, utxoContract.output.amount)
-
-            .txInCollateral(collateral.input.txHash, collateral.input.outputIndex, collateral.output.amount, collateral.output.address)
+            .txInCollateral(
+                collateral.input.txHash,
+                collateral.input.outputIndex,
+                collateral.output.amount,
+                collateral.output.address,
+            )
             .requiredSignerHash(pubKeyHash)
             .changeAddress(walletAddress)
             .setNetwork(APP_NETWORK)
@@ -120,5 +204,3 @@ export class HydraTxBuilder extends HydraAdapter {
         return await unsignedTx.complete();
     };
 }
-
-

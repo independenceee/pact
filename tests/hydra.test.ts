@@ -1,13 +1,19 @@
 import { MeshWallet } from "@meshsdk/core";
 import { HydraProvider } from "@meshsdk/hydra";
-import { APP_NETWORK_ID, HYDRA_HTTP_URL, HYDRA_WS_URL, HYDRA_HTTP_URL_SUB, HYDRA_WS_URL_SUB } from "~/constants/enviroments";
+import {
+    APP_NETWORK_ID,
+    HYDRA_HTTP_URL,
+    HYDRA_WS_URL,
+    HYDRA_HTTP_URL_SUB,
+    HYDRA_WS_URL_SUB,
+} from "~/constants/enviroments";
 import { blockfrostProvider } from "~/libs/cardano";
 import { HydraTxBuilder } from "~/txbuilders/hydra.txbuilder";
 
 describe("Pact is a multi-party decentralized application (dApp) built on Cardano’s Hydra Head, designed to enable groups of people to safely pool funds for a shared goal (e.g., co-purchasing an NFT, funding a small project, or creating a community treasury).", function () {
     let meshWallet: MeshWallet;
-    // let isCreator: boolean = true; // Use for Alice
-    let isCreator: boolean = false; // Use for Bob
+    let isCreator: boolean = true; // Use for Alice
+    // let isCreator: boolean = false; // Use for Bob
     let hydraProvider: HydraProvider;
 
     beforeEach(async function () {
@@ -18,8 +24,8 @@ describe("Pact is a multi-party decentralized application (dApp) built on Cardan
             key: {
                 type: "mnemonic",
                 // words: process.env.APP_MNEMONIC?.split(" ") || [],
-                words: process.env.BOB_APP_MNEMONIC?.split(" ") || [],
-                // words: process.env.ALICE_APP_MNEMONIC?.split(" ") || [],
+                // words: process.env.BOB_APP_MNEMONIC?.split(" ") || [],
+                words: process.env.ALICE_APP_MNEMONIC?.split(" ") || [],
             },
         });
 
@@ -61,7 +67,7 @@ describe("Pact is a multi-party decentralized application (dApp) built on Cardan
         });
 
         it("Ready to fanout  Snapshot finalized, ready for layer-1 distribution.", async () => {
-            // return;
+            return;
             try {
                 const hydraTxBuilder = new HydraTxBuilder({
                     meshWallet: meshWallet,
@@ -117,8 +123,6 @@ describe("Pact is a multi-party decentralized application (dApp) built on Cardan
             const commitSignedTx = await meshWallet.signTx(commitUnsignedTx, true);
             const commitTxHash = await meshWallet.submitTx(commitSignedTx);
             console.log("https://preview.cexplorer.io/tx/" + commitTxHash);
-            const snapshotUtxos = await hydraProvider.subscribeSnapshotUtxo();
-            console.log(snapshotUtxos);
         });
 
         it("2- Commit UTXOs into the Hydra head to make them available for off-chain transactions.", async () => {
@@ -156,20 +160,19 @@ describe("Pact is a multi-party decentralized application (dApp) built on Cardan
 
     describe("Hydra interaction with smartcontract", function () {
         it("Locks a specific amount of lovelace into the Hydra contract address.", async function () {
-            return;
+            // return;
             const hydraTxBuilder: HydraTxBuilder = new HydraTxBuilder({
                 meshWallet: meshWallet,
                 hydraProvider: hydraProvider,
             });
             await hydraTxBuilder.initialize();
-
-            const unsignedTx: string = await hydraTxBuilder.contribute({ quantity: 10, required: 0 });
+            const unsignedTx: string = await hydraTxBuilder.contribute({ quantity: 10, required: 10 });
             const signedTx: string = await meshWallet.signTx(unsignedTx, true);
             await hydraTxBuilder.submitTx({ signedTx: signedTx });
         });
 
         it("Unlocks previously locked lovelace from the Hydra contract.", async function () {
-            return;
+            // return;
             const hydraTxBuilder: HydraTxBuilder = new HydraTxBuilder({
                 meshWallet: meshWallet,
                 hydraProvider: hydraProvider,
