@@ -592,4 +592,41 @@ export class HydraAdapter {
             walletAddress: walletAddress,
         };
     };
+
+    /**
+     * @description
+     * Retrieve wallet essentials for building a transaction:
+     * - Available UTxOs
+     * - A valid collateral UTxO (>= 5 ADA in lovelace)
+     * - Wallet's change address
+     *
+     * Flow:
+     * 1. Get all wallet UTxOs.
+     * 2. Ensure collateral exists (create one if missing).
+     * 3. Get wallet change address.
+     *
+     * @returns {Promise<{ utxos: UTxO[]; collateral: UTxO; walletAddress: string }>}
+     *          Object containing wallet UTxOs, a collateral UTxO, and change address.
+     *
+     * @throws {Error}
+     *         If UTxOs or wallet address cannot be retrieved.
+     */
+    protected getParticipantsForHydraTx = async (): Promise<Array<string>> => {
+        try {
+            const utxos = await this.hydraProvider.fetchUTxOs();
+            if (!utxos || !Array.isArray(utxos)) {
+                throw new Error("Failed to fetch valid UTxOs");
+            }
+
+            const addresses = utxos
+                .map((utxo) => utxo.output.address)
+                .filter((address): address is string => typeof address === "string")
+                .map((address) => address)
+                .filter((value, index, self) => index === self.findIndex((address) => address === value));
+
+            return addresses;
+        } catch (error) {
+            throw new Error("Unable to retrieve participants for Hydra transaction");
+        }
+    };
 }

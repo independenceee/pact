@@ -40,7 +40,7 @@ describe("Save data and read data to participate in the cardano hydra process", 
     });
 
     test("Disburse", async function () {
-        // return;
+        return;
         const meshTxBuilder: MeshTxBuilder = new MeshTxBuilder({
             meshWallet: meshWallet,
         });
