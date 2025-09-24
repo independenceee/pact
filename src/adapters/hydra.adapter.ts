@@ -201,6 +201,26 @@ export class HydraAdapter {
                     reject(error);
                 }
             });
+
+            this.hydraProvider.onMessage((message) => {
+                try {
+                    if (message.tag === "HeadIsFinalized") {
+                        resolve();
+                    }
+                } catch (error) {
+                    reject(error);
+                }
+            });
+
+            this.hydraProvider.onStatusChange((status) => {
+                try {
+                    if (status === "FINAL") {
+                        resolve();
+                    }
+                } catch (error) {
+                    reject(error);
+                }
+            });
         });
     };
 
@@ -224,6 +244,25 @@ export class HydraAdapter {
         await this.hydraProvider.connect();
         await new Promise<void>((resolve, reject) => {
             this.hydraProvider.fanout().catch((error: Error) => reject(error));
+
+            this.hydraProvider.onMessage((message) => {
+                try {
+                    if (message.tag === "ReadyToFanout") {
+                        resolve();
+                    }
+                } catch (error) {
+                    reject(error);
+                }
+            });
+            this.hydraProvider.onStatusChange((status) => {
+                try {
+                    if (status === "FANOUT_POSSIBLE") {
+                        resolve();
+                    }
+                } catch (error) {
+                    reject(error);
+                }
+            });
 
             this.hydraProvider.onMessage((message) => {
                 try {
