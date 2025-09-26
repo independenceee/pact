@@ -109,10 +109,10 @@ export default function Page() {
 
                             <motion.div
                                 variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-                                className="flex flex-col sm:flex-row gap-4"
+                                className="flex flex-row gap-4"
                             >
                                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                                    <Button className="bg-purple-600 hover:bg-purple-700 text-white ring-purple-400/20 hover:ring-purple-400/30 font-bold transition-all shadow-lg rounded-lg py-6 px-8">
+                                    <Button className="bg-purple-600 hover:bg-purple-700 text-white ring-purple-400/20 hover:ring-purple-400/30   font-bold transition-all shadow-lg rounded-lg py-6 px-8">
                                         Join the Pact
                                         <svg
                                             className="ml-2 h-5 w-5 inline"
