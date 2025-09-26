@@ -315,8 +315,8 @@ export default function Page() {
                             Frequently Asked Questions
                         </h2>
                         <p className="text-gray-300 max-w-2xl mx-auto">
-                            Got questions about CryptoFlow? We've got answers. If you don't see what you're looking for,
-                            reach out to our support team.
+                            Got questions about CryptoFlow? We are got answers. If you dont see what you are looking
+                            for, reach out to our support team.
                         </p>
                     </div>
 

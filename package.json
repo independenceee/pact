@@ -8,6 +8,8 @@
         "start": "next start",
         "lint": "eslint",
         "test": "jest --runInBand",
+        "postinstall": "prisma generate",
+        
         "build:contract": "cd ./contract && aiken build",
         "check:contract": "cd ./contract && aiken check"
     },
