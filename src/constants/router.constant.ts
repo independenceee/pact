@@ -1,4 +1,6 @@
 export const router = {
     home: "/",
-    search: "/search"
+    paction: "/paction",
+    dashboard: "/dashboard",
+    documentation: "/documentation",
 };
