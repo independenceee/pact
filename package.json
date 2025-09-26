@@ -9,7 +9,7 @@
         "lint": "eslint",
         "test": "jest --runInBand",
         "postinstall": "prisma generate",
-        
+        "vercel-build": "prisma generate && prisma migrate deploy && next build",
         "build:contract": "cd ./contract && aiken build",
         "check:contract": "cd ./contract && aiken check"
     },

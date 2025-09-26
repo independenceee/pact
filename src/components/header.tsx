@@ -24,44 +24,44 @@ export default function Header() {
             className={cn(
                 `fixed w-full z-50 transition-all duration-300 ${
                     isScrolled
-                        ? "bg-gradient-to-r from-gray-900 via-indigo-900/90 to-purple-900/90 backdrop-blur-md py-3 shadow-lg"
-                        : "bg-transparent py-6"
+                        ? "bg-gray-900/95 backdrop-blur-lg py-5 shadow-lg border-b border-purple-400/20"
+                        : "bg-transparent py-7"
                 }`,
             )}
         >
-            <div className="max-w-[1200px] mx-auto px-4 flex justify-between items-center">
+            <div className="max-w-[1200px] mx-auto px-6 flex justify-between items-center">
                 <div className="flex items-center">
-                    <h1 className="text-2xl font-bold text-white">
+                    <h1 className="text-3xl font-bold text-white">
                         Hydra
-                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-500 font-bold">
+                        <span className="bg-clip-text text-transparent bg-purple-400 font-bold">
                             Pact
                         </span>
                     </h1>
                 </div>
 
-                <ul className="hidden lg:flex items-center space-x-8">
+                <ul className="hidden lg:flex items-center space-x-10">
                     <li>
-                        <a href="#features" className="text-gray-300 hover:text-purple-400 transition-colors">
+                        <a href="#features" className="text-lg text-gray-200 hover:text-purple-400 transition-colors">
                             Features
                         </a>
                     </li>
                     <li>
-                        <a href="#how-it-works" className="text-gray-300 hover:text-purple-400 transition-colors">
+                        <a href="#how-it-works" className="text-lg text-gray-200 hover:text-purple-400 transition-colors">
                             How it works
                         </a>
                     </li>
                     <li>
-                        <a href="#testimonials" className="text-gray-300 hover:text-purple-400 transition-colors">
+                        <a href="#testimonials" className="text-lg text-gray-200 hover:text-purple-400 transition-colors">
                             Testimonials
                         </a>
                     </li>
                     <li>
-                        <a href="#pricing" className="text-gray-300 hover:text-purple-400 transition-colors">
+                        <a href="#pricing" className="text-lg text-gray-200 hover:text-purple-400 transition-colors">
                             Pricing
                         </a>
                     </li>
                     <li>
-                        <a href="#faq" className="text-gray-300 hover:text-purple-400 transition-colors">
+                        <a href="#faq" className="text-lg text-gray-200 hover:text-purple-400 transition-colors">
                             FAQ
                         </a>
                     </li>
@@ -71,7 +71,7 @@ export default function Header() {
                     <Link href="#!">
                         <Button
                             className={cn(
-                                "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white ring-purple-400/20 hover:ring-purple-400/30 transition-all shadow-md rounded-lg",
+                                "bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 text-lg ring-purple-400/20 hover:ring-purple-400/30 transition-all shadow-md rounded-lg",
                             )}
                         >
                             Connect Wallet
@@ -84,19 +84,19 @@ export default function Header() {
                     className="lg:hidden text-white hover:text-purple-400 transition-colors"
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 >
-                    {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                    {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
                 </button>
             </div>
 
             {/* Mobile menu */}
             {isMobileMenuOpen && (
-                <div className="lg:hidden bg-gradient-to-b from-gray-900/95 to-indigo-900/95 backdrop-blur-lg absolute top-full left-0 w-full py-4 shadow-lg border-b border-purple-400/30">
-                    <div className="container mx-auto px-4">
+                <div className="lg:hidden bg-gray-900/95 backdrop-blur-lg absolute top-full left-0 w-full py-6 shadow-lg border-b border-purple-400/30">
+                    <div className="container mx-auto px-6">
                         <ul className="flex flex-col space-y-4">
                             <li>
                                 <a
                                     href="#features"
-                                    className="text-gray-200 hover:text-purple-400 transition-colors block py-2"
+                                    className="text-lg text-gray-200 hover:text-purple-400 transition-colors block py-3"
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >
                                     Features
@@ -105,7 +105,7 @@ export default function Header() {
                             <li>
                                 <a
                                     href="#how-it-works"
-                                    className="text-gray-200 hover:text-purple-400 transition-colors block py-2"
+                                    className="text-lg text-gray-200 hover:text-purple-400 transition-colors block py-3"
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >
                                     How it works
@@ -114,7 +114,7 @@ export default function Header() {
                             <li>
                                 <a
                                     href="#testimonials"
-                                    className="text-gray-200 hover:text-purple-400 transition-colors block py-2"
+                                    className="text-lg text-gray-200 hover:text-purple-400 transition-colors block py-3"
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >
                                     Testimonials
@@ -123,7 +123,7 @@ export default function Header() {
                             <li>
                                 <a
                                     href="#pricing"
-                                    className="text-gray-200 hover:text-purple-400 transition-colors block py-2"
+                                    className="text-lg text-gray-200 hover:text-purple-400 transition-colors block py-3"
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >
                                     Pricing
@@ -132,7 +132,7 @@ export default function Header() {
                             <li>
                                 <a
                                     href="#faq"
-                                    className="text-gray-200 hover:text-purple-400 transition-colors block py-2"
+                                    className="text-lg text-gray-200 hover:text-purple-400 transition-colors block py-3"
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >
                                     FAQ
@@ -141,7 +141,7 @@ export default function Header() {
                             <li className="pt-4 flex flex-col space-y-3">
                                 <Button
                                     variant="ghost"
-                                    className="text-gray-200 hover:text-purple-400 hover:bg-purple-500/10 w-full justify-start"
+                                    className="text-lg text-gray-200 hover:text-purple-400 hover:bg-purple-500/10 w-full justify-start py-3"
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >
                                     Login
@@ -149,7 +149,7 @@ export default function Header() {
                                 <Link href="#!">
                                     <Button
                                         className={cn(
-                                            "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white ring-purple-400/20 hover:ring-purple-400/30 transition-all shadow-md rounded-lg w-full",
+                                            "bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 text-lg ring-purple-400/20 hover:ring-purple-400/30 transition-all shadow-md rounded-lg w-full",
                                         )}
                                         onClick={() => setIsMobileMenuOpen(false)}
                                     >
