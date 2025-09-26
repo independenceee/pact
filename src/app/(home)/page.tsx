@@ -8,9 +8,9 @@ import { faqs } from "~/constants/faqs.constant";
 
 export default function Page() {
     return (
-        <main className="font-sans bg-gray-900">
+        <main className="font-sans bg-gray-900 snap-y snap-mandatory">
             {/* Hero Section */}
-            <section className="relative min-h-screen flex flex-col justify-center overflow-hidden bg-gray-900">
+            <section className="snap-start relative min-h-screen flex flex-col justify-center overflow-hidden bg-gray-900">
                 <style jsx>{`
                     .hero-glow::before {
                         content: "";
@@ -312,7 +312,7 @@ export default function Page() {
             </section>
 
             {/* Features Section */}
-            <section className="py-24 min-h-screen bg-gray-900">
+            <section className="snap-start py-24 min-h-screen bg-gray-900">
                 <div className="max-w-[1200px] mx-auto px-4">
                     <div className="text-center mb-16">
                         <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400">
@@ -349,7 +349,8 @@ export default function Page() {
                 </div>
             </section>
 
-             <section className="py-24 min-h-screen bg-gray-900">
+            {/* Features Section */}
+            <section className="snap-start py-24 min-h-screen bg-gray-900">
                 <div className="max-w-[1200px] mx-auto px-4">
                     <div className="text-center mb-16">
                         <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400">
