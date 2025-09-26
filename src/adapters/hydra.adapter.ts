@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
     applyParamsToScript,
     deserializeAddress,
@@ -61,7 +62,8 @@ export class HydraAdapter {
 
         this.spendAddress = serializeAddressObj(
             scriptAddress(
-                deserializeAddress(serializePlutusScript(this.spendScript, undefined, APP_NETWORK_ID, false).address).scriptHash,
+                deserializeAddress(serializePlutusScript(this.spendScript, undefined, APP_NETWORK_ID, false).address)
+                    .scriptHash,
                 "",
                 false,
             ),
@@ -589,7 +591,9 @@ export class HydraAdapter {
     }> => {
         const utxos = await this.meshWallet.getUtxos();
         const collaterals =
-            (await this.meshWallet.getCollateral()).length === 0 ? [await this.getCollateral()] : await this.meshWallet.getCollateral();
+            (await this.meshWallet.getCollateral()).length === 0
+                ? [await this.getCollateral()]
+                : await this.meshWallet.getCollateral();
         const walletAddress = await this.meshWallet.getChangeAddress();
         if (!utxos || utxos.length === 0) throw new Error("No UTXOs found in getWalletForTx method.");
         if (!collaterals || collaterals.length === 0) this.meshWallet.createCollateral();
@@ -709,7 +713,10 @@ export class HydraAdapter {
                 const [pubKeyHash, stakeCredentialHash] = item.list[0].fields.map((f: any) => f.bytes);
                 const amount = Number(item.list[1].int);
                 return {
-                    walletAddress: serializeAddressObj(pubKeyAddress(pubKeyHash, stakeCredentialHash, false), APP_NETWORK_ID),
+                    walletAddress: serializeAddressObj(
+                        pubKeyAddress(pubKeyHash, stakeCredentialHash, false),
+                        APP_NETWORK_ID,
+                    ),
                     amount: amount,
                 };
             });
