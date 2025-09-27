@@ -66,12 +66,12 @@ export default function Header() {
                 </div>
 
                 {/* Mobile menu button */}
-                <button
+                <Button
                     className="lg:hidden text-white hover:text-purple-400 transition-colors"
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 >
                     {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
-                </button>
+                </Button>
             </div>
 
             {/* Mobile menu */}
