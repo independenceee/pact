@@ -6,6 +6,7 @@ import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import { cn } from "~/lib/utils";
 import { navbars } from "~/constants/navbar.constant";
+import { ConnectWallet } from "./connect-wallet";
 
 export default function Header() {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -53,17 +54,7 @@ export default function Header() {
                     })}
                 </ul>
 
-                <div className="hidden lg:flex items-center space-x-4">
-                    <Link href="#!">
-                        <Button
-                            className={cn(
-                                "bg-purple-600 hover:bg-purple-700 text-white px-6 py-4 text-shadow-lg ring-purple-400/20 hover:ring-purple-400/30 transition-all shadow-md rounded-lg",
-                            )}
-                        >
-                            Connect Wallet
-                        </Button>
-                    </Link>
-                </div>
+                <ConnectWallet />
 
                 {/* Mobile menu button */}
                 <Button
