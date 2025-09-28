@@ -7,8 +7,12 @@ import Link from "next/link";
 import { cn } from "~/lib/utils";
 import { navbars } from "~/constants/navbar.constant";
 import { ConnectWallet } from "./connect-wallet";
+import { router } from "~/constants/router.constant";
+import { usePathname } from "next/navigation";
 
 export default function Header() {
+    const pathname = usePathname();
+
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -21,6 +25,10 @@ export default function Header() {
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
+    if (pathname.startsWith(router.documentation)) {
+        return null;
+    }
+
     return (
         <nav
             className={cn(
@@ -32,12 +40,12 @@ export default function Header() {
             )}
         >
             <div className="max-w-[1200px] mx-auto px-6 flex justify-between items-center">
-                <div className="flex items-center">
+                <Link href={router.home} className="flex items-center">
                     <h1 className="text-3xl font-bold text-white">
                         Hydra
                         <span className="bg-clip-text text-transparent bg-purple-400 font-bold">Pact</span>
                     </h1>
-                </div>
+                </Link>
 
                 <ul className="hidden lg:flex items-center space-x-10">
                     {navbars.map(function (navbar) {
