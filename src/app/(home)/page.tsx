@@ -5,11 +5,13 @@ import { AnimatePresence, motion } from "framer-motion";
 import { features } from "~/constants/features.constant";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "~/components/ui/accordion";
 import { faqs } from "~/constants/faqs.constant";
+import Pagination from "~/components/pagination";
+import Link from "next/link";
+import { router } from "~/constants/router.constant";
 
 export default function Page() {
     return (
         <main className="font-sans bg-gray-900 snap-y snap-mandatory">
-            {/* Hero Section */}
             <section className="snap-start relative min-h-screen flex flex-col justify-center overflow-hidden bg-gray-900">
                 <style jsx>{`
                     .hero-glow::before {
@@ -170,7 +172,6 @@ export default function Page() {
                             </motion.div>
                         </motion.div>
 
-                        {/* Right Content (Image + Badges) */}
                         <motion.div
                             className="lg:w-1/2 mt-12 lg:mt-0"
                             variants={{
@@ -203,7 +204,6 @@ export default function Page() {
                                     />
                                 </motion.div>
 
-                                {/* Badges Grid */}
                                 <div className="absolute -right-20 -top-10 bg-blue-600/30 backdrop-blur-md rounded-lg p-4 border border-blue-400/40 shadow-lg">
                                     <div className="flex items-center space-x-3">
                                         <div className="h-10 w-10 bg-green-600/30 rounded-full flex items-center justify-center">
@@ -229,7 +229,6 @@ export default function Page() {
                                     </div>
                                 </div>
 
-                                {/* Badge 2: Scalability (Top-Left) */}
                                 <div className="absolute -left-10 top-8 bg-purple-600/30 backdrop-blur-md rounded-lg p-4 border border-purple-400/40 shadow-lg">
                                     <div className="flex items-center space-x-3">
                                         <div className="h-10 w-10 bg-purple-500/30 rounded-full flex items-center justify-center">
@@ -255,7 +254,6 @@ export default function Page() {
                                     </div>
                                 </div>
 
-                                {/* Badge 3: Transaction Speed (Bottom-Left) */}
                                 <div className="absolute -left-10 bottom-0 bg-blue-600/30 backdrop-blur-md rounded-lg p-4 border border-blue-400/40 shadow-lg">
                                     <div className="flex items-center space-x-3">
                                         <div className="h-10 w-10 bg-green-600/30 rounded-full flex items-center justify-center">
@@ -311,56 +309,18 @@ export default function Page() {
                 </div>
             </section>
 
-            {/* Features Section */}
-            <section className="snap-start py-24 min-h-screen bg-gray-900">
-                <div className="max-w-[1200px] mx-auto px-4">
-                    <div className="text-center mb-16">
-                        <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400">
-                            Powerful Features
-                        </h2>
-                        <p className="text-gray-300 max-w-2xl mx-auto leading-relaxed">
-                            CryptoFlow gives you the edge with advanced tools designed for both beginners and
-                            professional traders.
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                        {features.map((feature, index) => (
-                            <motion.div
-                                key={index}
-                                className="bg-gray-800/80 backdrop-blur-md border border-gray-700/50 rounded-xl p-6 hover:bg-gray-700/90 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10 group transform hover:-translate-y-2"
-                                initial={{ opacity: 0, y: 30 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.6, delay: index * 0.1, ease: "easeOut" }}
-                            >
-                                <div className="flex items-center gap-4 mb-4">
-                                    <div className="bg-purple-600/10 rounded-lg w-10 h-10 flex items-center justify-center text-purple-400 group-hover:text-purple-300 group-hover:bg-purple-600/20 transition-all duration-300">
-                                        {feature.icon}
-                                    </div>
-                                    <h3 className="text-xl font-semibold text-white group-hover:text-purple-300 transition-colors duration-300">
-                                        {feature.title}
-                                    </h3>
-                                </div>
-                                <p className="text-gray-400 text-sm leading-relaxed">{feature.description}</p>
-                            </motion.div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-            <div className="max-w-screen-xl mx-auto p-5 sm:p-10 md:p-16 relative">
+            <section className="max-w-screen-xl mx-auto p-5 sm:p-10 md:p-16 relative">
                 <div className="text-center mb-16">
                     <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400">
-                        Powerful Features
+                        Why Hydra Pact?
                     </h2>
                     <p className="text-gray-300 max-w-2xl mx-auto leading-relaxed">
-                        CryptoFlow gives you the edge with advanced tools designed for both beginners and professional
-                        traders.
+                        Hydra Pact brings unparalleled scalability and efficiency to Cardano, empowering developers and
+                        users in the DeFi ecosystem.
                     </p>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-6 md:gap-10">
-                    {/* Phần chính (bài viết nổi bật) */}
                     <div className="flex-1">
                         <a href="#">
                             <div
@@ -390,7 +350,6 @@ export default function Page() {
                                     Explore how blockchain technology is revolutionizing industries with secure,
                                     decentralized solutions.
                                 </p>
-                                {/* Thanh tiến trình cho bài viết nổi bật */}
                                 <div className="w-full bg-gray-700 rounded-full h-2.5">
                                     <div
                                         className="bg-gradient-to-r from-purple-400 to-blue-400 h-2.5 rounded-full transition-all duration-300"
@@ -402,67 +361,164 @@ export default function Page() {
                         </div>
                     </div>
 
-                    {/* Danh sách bài viết phụ */}
                     <div className="flex-1">
-                        {[
-                            {
-                                date: "Sep 28, 2025",
-                                title: "AI-Powered Crypto Trading Bots",
-                                image: "https://i.pinimg.com/736x/6f/b7/bb/6fb7bbca52f521c7eb195f2465f1e711.jpg",
-                                fundedPercentage: 60,
-                            },
-                            {
-                                date: "Sep 20, 2025",
-                                title: "DeFi: The Next Financial Revolution",
-                                image: "https://i.pinimg.com/736x/6f/b7/bb/6fb7bbca52f521c7eb195f2465f1e711.jpg",
-                                fundedPercentage: 85,
-                            },
-                            {
-                                date: "Sep 15, 2025",
-                                title: "NFTs and Their Impact on Digital Art",
-                                image: "https://i.pinimg.com/736x/6f/b7/bb/6fb7bbca52f521c7eb195f2465f1e711.jpg",
-                                fundedPercentage: 45,
-                            },
-                            {
-                                date: "Sep 10, 2025",
-                                title: "Crypto Regulations: What to Expect",
-                                image: "https://i.pinimg.com/736x/6f/b7/bb/6fb7bbca52f521c7eb195f2465f1e711.jpg",
-                                fundedPercentage: 90,
-                            },
-                        ].map((item, index) => (
-                            <div key={index} className="flex items-start mb-4 pb-4 border-b border-gray-700/50">
-                                <a href="#" className="inline-block mr-4">
-                                    <div
-                                        className="w-16 h-16 bg-cover bg-center rounded-md"
-                                        style={{
-                                            backgroundImage: `url(${item.image})`,
-                                        }}
-                                    ></div>
-                                </a>
-                                <div className="text-sm flex-1">
-                                    <p className="text-gray-400 text-xs">{item.date}</p>
-                                    <a
-                                        href="#"
-                                        className="text-white font-medium hover:text-purple-400 transition duration-300"
-                                    >
-                                        {item.title}
-                                    </a>
-                                    {/* Thanh tiến trình cho bài viết phụ */}
-                                    <div className="w-full bg-gray-700 rounded-full h-2 mt-2">
+                        <div>
+                            {[
+                                {
+                                    date: "Sep 28, 2025",
+                                    title: "AI-Powered Crypto Trading Bots",
+                                    image: "https://i.pinimg.com/736x/6f/b7/bb/6fb7bbca52f521c7eb195f2465f1e711.jpg",
+                                    fundedPercentage: 60,
+                                },
+                                {
+                                    date: "Sep 20, 2025",
+                                    title: "DeFi: The Next Financial Revolution",
+                                    image: "https://i.pinimg.com/736x/6f/b7/bb/6fb7bbca52f521c7eb195f2465f1e711.jpg",
+                                    fundedPercentage: 85,
+                                },
+                                {
+                                    date: "Sep 15, 2025",
+                                    title: "NFTs and Their Impact on Digital Art",
+                                    image: "https://i.pinimg.com/736x/6f/b7/bb/6fb7bbca52f521c7eb195f2465f1e711.jpg",
+                                    fundedPercentage: 45,
+                                },
+                                {
+                                    date: "Sep 10, 2025",
+                                    title: "Crypto Regulations: What to Expect",
+                                    image: "https://i.pinimg.com/736x/6f/b7/bb/6fb7bbca52f521c7eb195f2465f1e711.jpg",
+                                    fundedPercentage: 90,
+                                },
+                            ].map((item, index) => (
+                                <div key={index} className="flex items-start mb-4 pb-4 border-b border-gray-700/50">
+                                    <a href="#" className="inline-block mr-4">
                                         <div
-                                            className="bg-gradient-to-r from-purple-400 to-blue-400 h-2 rounded-full transition-all duration-300"
-                                            style={{ width: `${item.fundedPercentage}%` }}
+                                            className="w-16 h-16 bg-cover bg-center rounded-md"
+                                            style={{
+                                                backgroundImage: `url(${item.image})`,
+                                            }}
                                         ></div>
+                                    </a>
+                                    <div className="text-sm flex-1">
+                                        <p className="text-gray-400 text-xs">{item.date}</p>
+                                        <a
+                                            href="#"
+                                            className="text-white font-medium hover:text-purple-400 transition duration-300"
+                                        >
+                                            {item.title}
+                                        </a>
+                                        {/* Thanh tiến trình cho bài viết phụ */}
+                                        <div className="w-full bg-gray-700 rounded-full h-2 mt-2">
+                                            <div
+                                                className="bg-gradient-to-r from-purple-400 to-blue-400 h-2 rounded-full transition-all duration-300"
+                                                style={{ width: `${item.fundedPercentage}%` }}
+                                            ></div>
+                                        </div>
+                                        <p className="text-gray-400 text-xs mt-1">Funded: {item.fundedPercentage}%</p>
                                     </div>
-                                    <p className="text-gray-400 text-xs mt-1">Funded: {item.fundedPercentage}%</p>
                                 </div>
-                            </div>
+                            ))}
+                        </div>
+                        <Pagination currentPage={1} setCurrentPage={null!} totalPages={3} />
+                    </div>
+                </div>
+            </section>
+
+            <section className="snap-start py-24 min-h-screen bg-gray-900">
+                <div className="max-w-[1200px] mx-auto px-4">
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400">
+                            Hydra Pact Features
+                        </h2>
+                        <p className="text-gray-300 max-w-2xl mx-auto leading-relaxed">
+                            Discover the cutting-edge tools and capabilities of Hydra Pact, designed to empower DeFi on
+                            Cardano.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                        {features.map((feature, index) => (
+                            <motion.div
+                                key={index}
+                                className="bg-gray-800/80 backdrop-blur-md border border-gray-700/50 rounded-xl p-6 hover:bg-gray-700/90 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10 group transform hover:-translate-y-2"
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.6, delay: index * 0.1, ease: "easeOut" }}
+                            >
+                                <div className="flex items-center gap-4 mb-4">
+                                    <div className="bg-purple-600/10 rounded-lg w-10 h-10 flex items-center justify-center text-purple-400 group-hover:text-purple-300 group-hover:bg-purple-600/20 transition-all duration-300">
+                                        {feature.icon}
+                                    </div>
+                                    <h3 className="text-xl font-semibold text-white group-hover:text-purple-300 transition-colors duration-300">
+                                        {feature.title}
+                                    </h3>
+                                </div>
+                                <p className="text-gray-400 text-sm leading-relaxed">{feature.description}</p>
+                            </motion.div>
                         ))}
                     </div>
                 </div>
-            </div>
+            </section>
 
-            {/* Features Section */}
+            <section className="mb-16 text-left bg-gray-900">
+                <div className="text-center mb-16">
+                    <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400">
+                        Discover Hydra Pact
+                    </h2>
+                    <p className="text-gray-300 max-w-2xl mx-auto leading-relaxed">
+                        Learn how Hydra Pact is transforming Cardano with scalable, secure, and cost-effective DeFi
+                        solutions.
+                    </p>
+                </div>
+                <aside className="mx-auto my-0 flex w-full max-w-[1200px] flex-col gap-2 px-4">
+                    <div className="flex w-full gap-7 max-sm:flex-col">
+                        {/* Video */}
+                        <div className="relative aspect-video w-[60%] rounded-3xl overflow-hidden shadow-lg max-sm:w-full">
+                            <div className="absolute left-8 top-8 h-full w-full rounded-3xl bg-gray-800 shadow-xl"></div>
+                            <iframe
+                                className="absolute inset-0 z-10 block h-full w-full rounded-xl"
+                                src="https://www.youtube.com/embed/Hf8YVPpIxPI"
+                                title="Cardano Hydra Pact: Scaling DeFi with Layer-2 Solutions"
+                                frameBorder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            ></iframe>
+                        </div>
+
+                        {/* Nội dung */}
+                        <div className="z-10 flex w-[40%] flex-col items-start gap-4 max-md:gap-3 max-sm:w-full">
+                            <h2 className="text-left text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400">
+                                Cardano Hydra Pact
+                            </h2>
+                            <p className="mb-1 text-lg md:text-xl font-normal text-gray-200">
+                                Unlock scalable DeFi with Hydra, Cardano's layer-2 solution for fast, low-cost
+                                transactions.
+                            </p>
+                            <span className="text-left leading-relaxed text-gray-300 max-md:text-base">
+                                Hydra Pact empowers developers and users with near-instant settlements, 99% cost
+                                reduction, and quantum-resistant security for the future of decentralized finance.
+                            </span>
+                            <span className="text-left leading-relaxed text-gray-300 max-md:text-base">
+                                Hydra Pact empowers developers and users with near-instant settlements, 99% cost
+                                reduction, and quantum-resistant security for the future of decentralized finance.
+                            </span>
+                            <Link href={router.dashboard} target="_blank">
+                                <button className="inline-flex items-center justify-center whitespace-nowrap transition-all duration-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-400 bg-gradient-to-r from-purple-400 to-blue-400 px-8 py-3 font-semibold text-white rounded-lg shadow-lg shadow-purple-500/25 hover:shadow-purple-500/50 hover:scale-105">
+                                    Join the Pact
+                                    <svg className="ml-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M9 5l7 7-7 7"
+                                        />
+                                    </svg>
+                                </button>
+                            </Link>
+                        </div>
+                    </div>
+                </aside>
+            </section>
+
             <section className="snap-start py-24 min-h-screen bg-gray-900">
                 <div className="max-w-[1200px] mx-auto px-4">
                     <div className="text-center mb-16">
@@ -470,8 +526,8 @@ export default function Page() {
                             Frequently Asked Questions
                         </h2>
                         <p className="text-gray-300 max-w-2xl mx-auto leading-relaxed">
-                            Got questions about CryptoFlow? We’ve got answers. If you don’t see what you’re looking for,
-                            reach out to our support team.
+                            Got questions about Hydra Pact? Explore our answers or reach out to our community for more
+                            details.
                         </p>
                     </div>
 
