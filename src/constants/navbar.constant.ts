@@ -9,7 +9,7 @@ export const navbars = [
     {
         id: 2,
         name: "Dashboard",
-        router: router.home,
+        router: router.dashboard,
     },
     {
         id: 3,

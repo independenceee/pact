@@ -29,7 +29,6 @@ export default function Page() {
                     }
                 `}</style>
 
-                {/* Background Animation Circles */}
                 <div className="absolute inset-0 overflow-hidden">
                     <motion.div
                         className="absolute top-1/4 left-10 w-72 h-72 bg-purple-500/15 rounded-full filter blur-3xl"
@@ -55,10 +54,8 @@ export default function Page() {
                     ></motion.div>
                 </div>
 
-                {/* Hero Content */}
                 <div className="max-w-[1200px] mx-auto px-4 py-20 relative z-10">
                     <div className="flex flex-col lg:flex-row items-center">
-                        {/* Left Content */}
                         <motion.div
                             className="lg:w-1/2"
                             variants={{
@@ -490,7 +487,7 @@ export default function Page() {
                                 Cardano Hydra Pact
                             </h2>
                             <p className="mb-1 text-lg md:text-xl font-normal text-gray-200">
-                                Unlock scalable DeFi with Hydra, Cardano's layer-2 solution for fast, low-cost
+                                Unlock scalable DeFi with Hydra, Cardano layer-2 solution for fast, low-cost
                                 transactions.
                             </p>
                             <span className="text-left leading-relaxed text-gray-300 max-md:text-base">
