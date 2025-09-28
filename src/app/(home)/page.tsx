@@ -348,6 +348,119 @@ export default function Page() {
                     </div>
                 </div>
             </section>
+            <div className="max-w-screen-xl mx-auto p-5 sm:p-10 md:p-16 relative">
+                <div className="text-center mb-16">
+                    <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400">
+                        Powerful Features
+                    </h2>
+                    <p className="text-gray-300 max-w-2xl mx-auto leading-relaxed">
+                        CryptoFlow gives you the edge with advanced tools designed for both beginners and professional
+                        traders.
+                    </p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-6 md:gap-10">
+                    {/* Phần chính (bài viết nổi bật) */}
+                    <div className="flex-1">
+                        <a href="#">
+                            <div
+                                className="h-64 bg-cover bg-center rounded-lg overflow-hidden shadow-lg transition-transform duration-300 hover:scale-105"
+                                style={{
+                                    backgroundImage:
+                                        "url(https://i.pinimg.com/1200x/bb/ac/a9/bbaca9900bbf88c989becf458777616f.jpg)",
+                                }}
+                                title="Featured article"
+                            ></div>
+                        </a>
+                        <div className="mt-4 bg-gray-800 rounded-lg p-6 flex flex-col justify-between leading-normal">
+                            <div>
+                                <a
+                                    href="#"
+                                    className="text-xs text-purple-400 uppercase font-medium mb-2 flex items-center hover:text-blue-400 transition duration-300"
+                                >
+                                    Technology
+                                </a>
+                                <a
+                                    href="#"
+                                    className="text-white font-bold text-xl mb-3 hover:text-purple-400 transition duration-300"
+                                >
+                                    The Future of Blockchain in 2025
+                                </a>
+                                <p className="text-gray-300 text-sm mb-4">
+                                    Explore how blockchain technology is revolutionizing industries with secure,
+                                    decentralized solutions.
+                                </p>
+                                {/* Thanh tiến trình cho bài viết nổi bật */}
+                                <div className="w-full bg-gray-700 rounded-full h-2.5">
+                                    <div
+                                        className="bg-gradient-to-r from-purple-400 to-blue-400 h-2.5 rounded-full transition-all duration-300"
+                                        style={{ width: "75%" }}
+                                    ></div>
+                                </div>
+                                <p className="text-gray-400 text-xs mt-2">Funded: 75%</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Danh sách bài viết phụ */}
+                    <div className="flex-1">
+                        {[
+                            {
+                                date: "Sep 28, 2025",
+                                title: "AI-Powered Crypto Trading Bots",
+                                image: "https://i.pinimg.com/736x/6f/b7/bb/6fb7bbca52f521c7eb195f2465f1e711.jpg",
+                                fundedPercentage: 60,
+                            },
+                            {
+                                date: "Sep 20, 2025",
+                                title: "DeFi: The Next Financial Revolution",
+                                image: "https://i.pinimg.com/736x/6f/b7/bb/6fb7bbca52f521c7eb195f2465f1e711.jpg",
+                                fundedPercentage: 85,
+                            },
+                            {
+                                date: "Sep 15, 2025",
+                                title: "NFTs and Their Impact on Digital Art",
+                                image: "https://i.pinimg.com/736x/6f/b7/bb/6fb7bbca52f521c7eb195f2465f1e711.jpg",
+                                fundedPercentage: 45,
+                            },
+                            {
+                                date: "Sep 10, 2025",
+                                title: "Crypto Regulations: What to Expect",
+                                image: "https://i.pinimg.com/736x/6f/b7/bb/6fb7bbca52f521c7eb195f2465f1e711.jpg",
+                                fundedPercentage: 90,
+                            },
+                        ].map((item, index) => (
+                            <div key={index} className="flex items-start mb-4 pb-4 border-b border-gray-700/50">
+                                <a href="#" className="inline-block mr-4">
+                                    <div
+                                        className="w-16 h-16 bg-cover bg-center rounded-md"
+                                        style={{
+                                            backgroundImage: `url(${item.image})`,
+                                        }}
+                                    ></div>
+                                </a>
+                                <div className="text-sm flex-1">
+                                    <p className="text-gray-400 text-xs">{item.date}</p>
+                                    <a
+                                        href="#"
+                                        className="text-white font-medium hover:text-purple-400 transition duration-300"
+                                    >
+                                        {item.title}
+                                    </a>
+                                    {/* Thanh tiến trình cho bài viết phụ */}
+                                    <div className="w-full bg-gray-700 rounded-full h-2 mt-2">
+                                        <div
+                                            className="bg-gradient-to-r from-purple-400 to-blue-400 h-2 rounded-full transition-all duration-300"
+                                            style={{ width: `${item.fundedPercentage}%` }}
+                                        ></div>
+                                    </div>
+                                    <p className="text-gray-400 text-xs mt-1">Funded: {item.fundedPercentage}%</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
 
             {/* Features Section */}
             <section className="snap-start py-24 min-h-screen bg-gray-900">
