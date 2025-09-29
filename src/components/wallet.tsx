@@ -14,14 +14,16 @@ import {
 import Image from "next/image";
 import { WalletType } from "~/types";
 import { useEffect, useState } from "react";
-import { cn } from "~/lib/utils";
+import { cn } from "~/libs/utils";
 import { Session } from "next-auth";
+import { useWallet } from "~/hooks/use-wallet";
 
 type Props = {
     wallet: WalletType;
     session: Session | null;
 };
 export default function Wallet({ wallet, session }: Props) {
+    const { connect } = useWallet();
     const [isEnable, setIsEnable] = useState<boolean>(false);
     const [isDownload, setIsDownload] = useState<boolean>(false);
 
@@ -114,12 +116,12 @@ export default function Wallet({ wallet, session }: Props) {
                             isDownload
                                 ? isEnable
                                     ? async () => {
-                                          // await signIn(session, {
-                                          //     icon: wallet.image,
-                                          //     id: wallet.id,
-                                          //     name: wallet.name,
-                                          //     version: wallet.version || "",
-                                          // });
+                                          await connect(session, {
+                                              icon: wallet.image,
+                                              id: wallet.id,
+                                              name: wallet.name,
+                                              version: wallet.version || "",
+                                          });
                                       }
                                     : handleEnable
                                 : handleDownload

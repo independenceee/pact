@@ -1,5 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "fumadocs-ui/css/ocean.css";
+@import "fumadocs-ui/css/preset.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -118,7 +120,6 @@
         scrollbar-width: thin;
         scrollbar-color: #444 #222;
         scroll-behavior: smooth;
-        
     }
     body {
         @apply bg-background text-foreground;

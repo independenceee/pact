@@ -1,7 +1,18 @@
+"use client";
+
+
 import { Facebook, Twitter, Instagram, Linkedin, Github } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { router } from "~/constants/router.constant";
 
 const Footer = () => {
+    const pathname = usePathname();
+
     const currentYear = new Date().getFullYear();
+
+    if (pathname.startsWith(router.documentation)) {
+        return null;
+    }
 
     return (
         <footer className="bg-gray-900 pt-16 pb-8 ">

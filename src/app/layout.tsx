@@ -1,9 +1,10 @@
 import "./globals.css";
-import { auth } from "~/lib/auth";
+import { auth } from "~/libs/auth";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Layout from "~/components/layout";
 import { PropsWithChildren } from "react";
+import Provider from "~/providers";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -21,11 +22,14 @@ export const metadata: Metadata = {
         "A decentralized group funding platform powered by Cardano's Hydra Layer 2 for secure, trustless, and low-cost multi-party contributions",
 };
 
-export default function RootLayout({ children }: Readonly<PropsWithChildren>) {
+export default async function RootLayout({ children }: Readonly<PropsWithChildren>) {
+    const session = await auth();
     return (
         <html lang="en">
             <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-                <Layout>{children}</Layout>
+                <Provider session={session}>
+                    <Layout>{children}</Layout>
+                </Provider>
             </body>
         </html>
     );
