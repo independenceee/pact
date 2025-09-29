@@ -1,27 +1,27 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { isNil } from "lodash";
+// import { isNil } from "lodash";
 import { ClipLoader } from "react-spinners";
 import {
     Dialog,
     DialogClose,
     DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
+    // DialogDescription,
+    // DialogFooter,
+    // DialogHeader,
+    // DialogTitle,
     DialogTrigger,
 } from "~/components/ui/dialog";
-import { router } from "~/constants/router.constant";
-import Link from "next/link";
+// import { router } from "~/constants/router.constant";
+// import Link from "next/link";
 import { Button } from "./ui/button";
 import { cn } from "~/libs/utils";
 import wallets from "~/constants/wallets.constant";
 import { networks } from "~/constants/networks.constant";
 import Network from "./network";
-import { useEffect, useState } from "react";
-import { redirect, useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { WalletType } from "~/types";
 import Wallet from "./wallet";
@@ -30,7 +30,7 @@ import { useWallet } from "~/hooks/use-wallet";
 
 const WalletDynamic = () => {
     const [network, setNetwork] = useState<string>("preview");
-    const { wallet, connect } = useWallet();
+    const { wallet, connect, address } = useWallet();
     useEffect(() => {
         const networkConnection = localStorage.getItem("network");
         if (networkConnection) {
@@ -49,14 +49,35 @@ const WalletDynamic = () => {
 
     useEffect(() => {
         if (status === "authenticated") {
-            redirect("/dashboard");
+            // router.push("/dashboard");
+            return;
         }
     }, [status, router]);
 
+    const triedAuto = useRef(false);
+    useEffect(() => {
+        if (status !== "authenticated") return;
+        if (wallet && address) return;
+        if (triedAuto.current) return;
+        triedAuto.current = true;
+        try {
+            let last = "";
+            try { last = localStorage.getItem("lastWallet") || ""; } catch {}
+            const selected = wallets.find((w) => w.name.toLowerCase() === last.toLowerCase()) || wallets[0];
+            if (selected) {
+                void connect(session ?? null, {
+                    id: selected.id || selected.name,
+                    name: selected.name,
+                    icon: selected.image || "",
+                    version: selected.version || "",
+                } as any);
+            }
+        } catch {}
+    }, [status, wallet, address, session, connect]);
     return (
         <div>
-            {!isNil(wallet) ? (
-                <Account />
+           {status === "authenticated" && wallet && address ? (
+            <Account />
             ) : (
                 <div className="hidden lg:flex items-center space-x-4">
                     <Dialog>

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown, ChevronRight, ExternalLink, X } from "lucide-react";
-import { docCategories, DocCategory, DocSidebarProps } from "~/constants/docs";
+import { docCategories, DocCategory, DocSidebarProps } from "~/constants/docs.constant";
 import { useState } from "react";
 
 export default function DocSidebar({ onClose }: DocSidebarProps) {
@@ -36,8 +36,9 @@ export default function DocSidebar({ onClose }: DocSidebarProps) {
 
   return (
     <aside 
-      className="w-80 bg-gray-50 border-r border-gray-200 p-4 lg:p-6 sticky top-0 h-screen overflow-y-auto"
+      className="w-80 bg-gray-50 border-r border-gray-200 p-4 lg:p-6 sticky h-screen overflow-y-auto"
       style={{
+        top: 0,
         scrollbarWidth: 'none',
         msOverflowStyle: 'none'
       }}

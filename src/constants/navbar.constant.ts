@@ -18,7 +18,7 @@ export const navbars = [
     },
 
     {
-        id: 3,
+        id: 4,
         name: "Documentation",
         router: router.documentation,
     },

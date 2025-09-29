@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { BrowserWallet, UTxO, Wallet } from "@meshsdk/core";
 import { Session } from "next-auth";
 import { isNil } from "lodash";
@@ -6,7 +6,7 @@ import { getNonceAddress } from "~/utils/auth";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { APP_NETWORK, APP_NETWORK_ID } from "~/constants/enviroments";
 import { wallets } from "~/constants/wallets.constant";
-import { WalletContext, WalletContextType } from "~/contexts/wallet.context";
+import { WalletContext } from "~/contexts/wallet.context";
 
 export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { data: session, status } = useSession();
@@ -55,6 +55,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const connect = async (session: Session | null, wallet: Wallet): Promise<void> => {
         try {
             const { name } = wallet;
+            try { localStorage.setItem("lastWallet", name); } catch (_) {}
             const browserWallet: BrowserWallet = await BrowserWallet.enable(name.toLowerCase());
             if (!browserWallet) {
                 throw new Error("Failed to connect wallet");
@@ -75,19 +76,20 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             const stakeAddress = stakeList[0];
 
             if (isNil(session)) {
-                const { data, result, message } = await getNonceAddress(address);
-                if (!result || isNil(data)) {
-                    throw new Error(message);
+                const nonceRes = await getNonceAddress(address);
+                if (!nonceRes.result || isNil(nonceRes.data)) {
+                    throw new Error(nonceRes.message);
                 }
-                const signature = await browserWallet.signData(data);
+                const signature = await browserWallet.signData(nonceRes.data);
                 if (isNil(signature)) {
                     throw new Error("Cant get signature");
                 }
-                await signIn("credentials", {
-                    data: JSON.stringify({
-                        wallet: name,
-                        address: address,
-                    }),
+                await signIn("cardano-wallet", {
+                    redirect: true,
+                    callbackUrl: "/",
+                    address,
+                    message: nonceRes.data,
+                    signature,
                 });
                 setBrowserWallet(browserWallet);
                 setWallet(wallet);
@@ -103,7 +105,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                 setStakeAddress(stakeAddress);
             }
         } catch (error) {
-            await signOut();
+            await disconnect();
         }
     };
 
@@ -128,7 +130,10 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         }
 
         try {
-            const walletName = session.user.wallet;
+            let walletName = (session?.user as { wallet?: string } | undefined)?.wallet;
+            if (!walletName) {
+                try { walletName = localStorage.getItem("lastWallet") || undefined; } catch (_) {}
+            }
 
             if (walletName) {
                 let browserWallet: BrowserWallet | null = null;
@@ -143,7 +148,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                         if (retryCount < maxRetries) {
                             await new Promise((resolve) => setTimeout(resolve, retryCount * 1000));
                         } else {
-                            throw enableError;
+                            throw enableError as Error;
                         }
                     }
                 }
@@ -156,13 +161,13 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                         const stakeList = await browserWallet.getRewardAddresses();
                         const stakeAddress = stakeList[0];
 
-                        const walletConfig = wallets.find((w) => w.name.toLowerCase() === walletName.toLowerCase());
+                        const walletConfig = wallets.find((w) => w.name.toLowerCase() === walletName!.toLowerCase());
 
                         setBrowserWallet(browserWallet);
                         setWallet({
                             icon: walletConfig?.image || "",
-                            id: walletName,
-                            name: walletName,
+                            id: walletName!,
+                            name: walletName!,
                             version: walletConfig?.version || "",
                         });
                         setAddress(address);
@@ -170,27 +175,20 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                     }
                 }
             }
-        } catch (error) {
+        } catch {
             // Handle error silently as in the original code
         }
     };
 
     useEffect(() => {
-        if (session) {
-            const timeoutId = setTimeout(() => {
-                syncWithSession(session);
-            }, 1000);
-            return () => clearTimeout(timeoutId);
-        } else {
-            syncWithSession(session);
-        }
-    }, [session, syncWithSession]);
+        syncWithSession(session ?? null);
+    }, [session]);
 
     useEffect(() => {
         if (isNil(session) || status === "unauthenticated") {
             disconnect();
         }
-    }, [session, status, disconnect]);
+    }, [session, status]);
 
     return (
         <WalletContext.Provider

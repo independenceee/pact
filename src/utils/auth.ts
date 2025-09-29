@@ -10,9 +10,7 @@ export const getNonceAddress = async (address: string) => {
             throw new Error("Stake address is required");
         }
 
-        if (!/^[a-z0-9_]+$/.test(address)) {
-            throw new Error("Invalid address");
-        }
+        // Accept full Cardano address format; avoid over-restrictive regex here
         const nonce = generateNonce("Signin with Hydra Tipjar");
         return {
             data: nonce,

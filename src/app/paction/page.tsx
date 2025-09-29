@@ -105,7 +105,7 @@ export default function Page() {
                             <div className="relative">
                                 <a href={`/fundraiser/${fundraiser.id}`}>
                                     <img className="w-full" src={fundraiser.image} alt={fundraiser.alt} />
-                                    <div className="hover:bg-transparent transition duration-300 absolute bottom-0 top-0 right-0 left-0 bg-gray-900/50 opacity-30" />
+                                    <div className="hover:bg-transparent transition duration-300 absolute bottom-0 right-0 left-0 bg-gray-900/50 opacity-30" style={{ top: 0 }} />
                                 </a>
                                 <a href={`/category/${fundraiser.category.toLowerCase()}`}>
                                     <div className="absolute bottom-0 left-0 bg-purple-600/80 px-4 py-2 text-white text-sm hover:bg-gray-700/90 hover:text-purple-400 transition duration-500 ease-in-out">
@@ -113,7 +113,7 @@ export default function Page() {
                                     </div>
                                 </a>
                                 <a href={`/fundraiser/${fundraiser.id}`}>
-                                    <div className="text-sm absolute top-0 right-0 bg-purple-600/80 px-4 text-white rounded-full h-16 w-16 flex flex-col items-center justify-center mt-3 mr-3 hover:bg-gray-700/90 hover:text-purple-400 transition duration-500 ease-in-out">
+                                    <div className="text-sm absolute right-0 bg-purple-600/80 px-4 text-white rounded-full h-16 w-16 flex flex-col items-center justify-center mt-3 mr-3 hover:bg-gray-700/90 hover:text-purple-400 transition duration-500 ease-in-out" style={{ top: 0 }}>
                                         <span className="font-bold">{new Date(fundraiser.date).getDate()}</span>
                                         <small>
                                             {new Date(fundraiser.date).toLocaleString("default", { month: "long" })}
