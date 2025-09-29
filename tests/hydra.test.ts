@@ -172,7 +172,7 @@ describe("Pact is a multi-party decentralized application (dApp) built on Cardan
         });
 
         it("Unlocks previously locked lovelace from the Hydra contract.", async function () {
-            // return;
+            return;
             const hydraTxBuilder: HydraTxBuilder = new HydraTxBuilder({
                 meshWallet: meshWallet,
                 hydraProvider: hydraProvider,
