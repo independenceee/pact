@@ -1,13 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { GetServerSidePropsContext, NextApiRequest, NextApiResponse } from "next";
-import type { NextAuthOptions, User } from "next-auth";
+import type { NextAuthOptions } from "next-auth";
 import NextAuth, { getServerSession } from "next-auth";
-import CredentialProvider from "next-auth/providers/credentials";
+import { authOptions } from "~/app/api/auth/[...nextauth]/route";
 
-interface Credentials {
-    wallet: string;
-    address: string;
-}
+// interface Credentials {
+//     wallet: string;
+//     address: string;
+//     signature: string;
+//     nonce: string;
+// }
 
 /**
  * NextAuth configuration object
@@ -16,78 +18,81 @@ interface Credentials {
  * - Parses `credentials.data` JSON string into `{ wallet, address }`.
  * - Stores user info in JWT and session objects.
  */
-export const config: NextAuthOptions = {
-    providers: [
-        CredentialProvider({
-            name: "credentials",
-            credentials: {
-                data: {},
-            },
-            async authorize(credentials) {
-                if (!credentials?.data) {
-                    return null;
-                }
+// export const config: NextAuthOptions = {
+//     providers: [
+//         CredentialProvider({
+//             name: "credentials",
+//             credentials: {
+//                 data: {},
+//             },
+//             async authorize(credentials) {
+//                 if (!credentials?.data) {
+//                     return null;
+//                 }
 
-                let parsed: Credentials;
-                try {
-                    parsed = JSON.parse(credentials.data as string) as Credentials;
-                } catch (error) {
-                    console.error("Invalid JSON in credentials.data");
-                    return null;
-                }
+//                 let parsed: Credentials;
+//                 try {
+//                     parsed = JSON.parse(credentials.data as string) as Credentials;
+//                 } catch (error) {
+//                     console.error("Invalid JSON in credentials.data");
+//                     return null;
+//                 }
 
-                const { wallet, address } = parsed;
+//                 const { wallet, address } = parsed;
 
-                if (wallet) {
-                    return null;
-                }
+//                 if (wallet) {
+//                     return null;
+//                 }
 
-                return {
-                    id: address,
-                    wallet,
-                    address,
-                };
-            },
-        }),
-    ],
+//                 return {
+//                     id: address,
+//                     wallet,
+//                     address,
+//                 };
+//             },
+//         }),
+//     ],
 
-    callbacks: {
-        /**
-         * Called on sign-in attempt.
-         * Always returns `true` to allow login.
-         */
-        async signIn() {
-            return true;
-        },
+//     callbacks: {
+//         /**
+//          * Called on sign-in attempt.
+//          * Always returns `true` to allow login.
+//          */
+//         async signIn() {
+//             return true;
+//         },
 
-        /**
-         * Redirect users after sign-in.
-         */
-        async redirect() {
-            return "/dashboard";
-        },
+//         /**
+//          * Redirect users after sign-in.
+//          */
+//         async redirect() {
+//             return "/dashboard";
+//         },
 
-        /**
-         * Custom JWT callback.
-         * Attaches the `user` object to the token on first login.
-         */
-        async jwt({ user, token }: { user?: User; token: any }) {
-            if (user) {
-                token.user = user;
-            }
-            return token;
-        },
+//         /**
+//          * Custom JWT callback.
+//          * Attaches the `user` object to the token on first login.
+//          */
+//         async jwt({ user, token }: { user?: User; token: any }) {
+//             if (user) {
+//                 token.user = user;
+//             }
+//             return token;
+//         },
 
-        /**
-         * Custom session callback.
-         * Ensures `session.user` is always populated from token.
-         */
-        async session({ session, token }: { session: any; token: any }) {
-            session.user = token.user;
-            return session;
-        },
-    },
-} satisfies NextAuthOptions;
+//         /**
+//          * Custom session callback.
+//          * Ensures `session.user` is always populated from token.
+//          */
+//         async session({ session, token }: { session: any; token: any }) {
+//             session.user = token.user;
+//             return session;
+//         },
+//     },
+// } satisfies NextAuthOptions;
+
+
+export const config: NextAuthOptions = authOptions as unknown as NextAuthOptions;
 
 /**
  * Helper function to get server-side session.

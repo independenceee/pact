@@ -2,11 +2,11 @@
 
 import { Menu, Home } from "lucide-react";
 import Link from "next/link";
-import { DocHeaderProps } from '~/constants/docs';
+import { DocHeaderProps } from '~/constants/docs.constant';
 
 export default function DocHeader({ onMenuClick }: DocHeaderProps) {
   return (
-    <div className="border-b border-gray-200 bg-white sticky top-0 z-10">
+    <div className="border-b border-gray-200 bg-white sticky z-10" style={{ top: 0 }}>
       <div className="p-4 lg:p-6">
         <div className="lg:hidden flex items-center justify-between mb-4">
           
