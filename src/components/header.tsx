@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "~/components/ui/button";
 import { Menu, X } from "lucide-react";
 import Link from "next/link";
-import { cn } from "~/lib/utils";
+import { cn } from "~/libs/utils";
 import { navbars } from "~/constants/navbar.constant";
 import { ConnectWallet } from "./connect-wallet";
 import { router } from "~/constants/router.constant";

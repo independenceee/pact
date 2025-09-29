@@ -2,7 +2,7 @@ import { DocsLayout, type DocsLayoutProps } from "fumadocs-ui/layouts/docs";
 import { RootProvider } from "fumadocs-ui/provider";
 import type { ReactNode } from "react";
 import { baseOptions } from "~/app/layout.config";
-import { source } from "~/lib/source";
+import { source } from "~/libs/source";
 import { DocsThemeHandler } from "~/components/docs/docs-theme-handler";
 import { DocsRouteHandler } from "~/components/docs/docs-route-handler";
 import "fumadocs-ui/css/ocean.css";
