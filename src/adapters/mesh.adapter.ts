@@ -34,7 +34,7 @@ export class MeshAdapter {
     protected spendScript: PlutusScript;
     protected fetcher: IFetcher;
     protected meshWallet: MeshWallet;
-    protected meshTxBuilder: MeshTxBuilder;
+    public meshTxBuilder: MeshTxBuilder;
 
     /**
      * @description
