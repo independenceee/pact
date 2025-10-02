@@ -1,5 +1,6 @@
 import { MeshWallet } from "@meshsdk/core";
-import { HydraProvider } from "@meshsdk/hydra";
+import { HydraInstance, HydraProvider } from "@meshsdk/hydra";
+import { DECIMAL_PLACE } from "~/constants/common";
 import {
     APP_NETWORK_ID,
     HYDRA_HTTP_URL,
@@ -9,6 +10,7 @@ import {
 } from "~/constants/enviroments";
 import { blockfrostProvider } from "~/libs/cardano";
 import { HydraTxBuilder } from "~/txbuilders/hydra.txbuilder";
+import { MeshTxBuilder } from "~/txbuilders/mesh.txbuilder";
 
 describe("Pact is a multi-party decentralized application (dApp) built on Cardano’s Hydra Head, designed to enable groups of people to safely pool funds for a shared goal (e.g., co-purchasing an NFT, funding a small project, or creating a community treasury).", function () {
     let meshWallet: MeshWallet;
@@ -24,8 +26,8 @@ describe("Pact is a multi-party decentralized application (dApp) built on Cardan
             key: {
                 type: "mnemonic",
                 // words: process.env.APP_MNEMONIC?.split(" ") || [],
-                words: process.env.BOB_APP_MNEMONIC?.split(" ") || [],
-                // words: process.env.ALICE_APP_MNEMONIC?.split(" ") || [],
+                // words: process.env.BOB_APP_MNEMONIC?.split(" ") || [],
+                words: process.env.ALICE_APP_MNEMONIC?.split(" ") || [],
             },
         });
 
@@ -67,7 +69,7 @@ describe("Pact is a multi-party decentralized application (dApp) built on Cardan
         });
 
         it("Ready to fanout  Snapshot finalized, ready for layer-1 distribution.", async () => {
-            return;
+            // return;
             try {
                 const hydraTxBuilder = new HydraTxBuilder({
                     meshWallet: meshWallet,
@@ -127,6 +129,36 @@ describe("Pact is a multi-party decentralized application (dApp) built on Cardan
 
         it("2- Commit UTXOs into the Hydra head to make them available for off-chain transactions.", async () => {
             return;
+            const meshTxBuilder = new MeshTxBuilder({
+                meshWallet: meshWallet,
+            });
+            const hydraTxBuilder = new HydraTxBuilder({
+                meshWallet: meshWallet,
+                hydraProvider: hydraProvider,
+            });
+            const utxoOnlyLovelace = meshTxBuilder.getUTxOOnlyLovelace({
+                utxos: await meshWallet.getUtxos(),
+                quantity: DECIMAL_PLACE * 10,
+            });
+            const unsignedTx = await meshTxBuilder.meshTxBuilder
+                .txIn(utxoOnlyLovelace.input.txHash, utxoOnlyLovelace.input.outputIndex)
+                .setFee("0")
+                .changeAddress(await meshWallet.getChangeAddress())
+                .selectUtxosFrom(await meshWallet.getUtxos())
+                .complete();
+
+            const commitTx = await hydraTxBuilder.hydraInstance.commitBlueprint(
+                utxoOnlyLovelace.input.txHash,
+                utxoOnlyLovelace.input.outputIndex,
+                {
+                    type: "Tx ConwayEra",
+                    cborHex: unsignedTx,
+                    description: "Commit Blueprint",
+                },
+            );
+            const signedTx = await meshWallet.signTx(commitTx);
+            const commitTxHash = await meshWallet.submitTx(signedTx);
+            console.log("https://preview.cexplorer.io/tx/" + commitTxHash);
         });
 
         it("1- Decommit UTXOs from the Hydra head, withdrawing funds back to the Cardano main chain.", async () => {
