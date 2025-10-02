@@ -15,7 +15,7 @@ const Footer = () => {
 
     return (
         <footer className="bg-gray-900 pt-16 pb-8">
-            <div className="max-w-[1200px] mx-auto px-4">
+            <div className="max-w-[1200px] mx-auto px-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 pb-8">
                     <div className="lg:col-span-2">
                         <Link href={router.home} className="flex items-center mb-2">

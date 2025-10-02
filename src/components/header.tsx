@@ -40,7 +40,7 @@ export default function Header() {
             )}
         >
             <div className="max-w-[1200px] mx-auto px-6 flex justify-between items-center">
-                <Link href={router.home} className="flex items-center">
+                <Link href={router.home} className="flex items-center mb-2">
                     <h1 className="text-3xl font-bold text-white">
                         Hydra
                         <span className="bg-clip-text text-transparent bg-purple-400 font-bold">Pact</span>
