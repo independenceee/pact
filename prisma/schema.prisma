@@ -8,12 +8,36 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id        String   @id @default(cuid())
+  address   String   @unique @map(name: "address")
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@map(name: "user")
+}
+
+model WalletNonce {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+  address   String   @unique @map(name: "address")
+  nonce     String
+
+  @@map(name: "wallet_nonce")
+}
+
 model Proposal {
-  id          String @id @default(cuid())
-  address     String @unique @map(name: "address")
-  title       String @map("title")
-  image       String @map("image")
-  description String @map("description")
+  id String @id @default(cuid())
+
+  title        String @map("title")
+  image        String @map("image")
+  description  String @map("description")
+  status       String @map("status")
+  destination  String @map(name: "destination")
+  target       Int    @map("target")
+  current      Int    @map("current")
+  participants Int    @map("participants")
 
   startTime DateTime @map("start_time")
   endTime   DateTime @map("end_time")
@@ -21,5 +45,5 @@ model Proposal {
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
-  @@map(name: "user")
+  @@map(name: "proposal")
 }
