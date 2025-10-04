@@ -1,6 +1,9 @@
 export const router = {
     home: "/",
     paction: "/paction",
-    dashboard: "/dashboard",
     documentation: "/documentation",
+
+    dashboard: "/dashboard",
+    proposal: "/dashboard/proposal",
+    create: "/dashboard/proposal/create",
 };

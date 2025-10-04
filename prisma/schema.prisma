@@ -9,10 +9,12 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  address   String   @unique @map(name: "address")
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
+  id          String        @id @default(cuid())
+  address     String        @unique @map(name: "address")
+  createdAt   DateTime      @default(now()) @map(name: "created_at")
+  updatedAt   DateTime      @updatedAt @map(name: "updated_at")
+  proposals   Proposal[]    // Một User tạo nhiều Proposal
+  transactions Transaction[] // Một User thực hiện nhiều Transaction
 
   @@map(name: "user")
 }
@@ -28,22 +30,37 @@ model WalletNonce {
 }
 
 model Proposal {
-  id String @id @default(cuid())
-
-  title        String @map("title")
-  image        String @map("image")
-  description  String @map("description")
-  status       String @map("status")
-  destination  String @map(name: "destination")
-  target       Int    @map("target")
-  current      Int    @map("current")
-  participants Int    @map("participants")
-
-  startTime DateTime @map("start_time")
-  endTime   DateTime @map("end_time")
-
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
+  id           String        @id @default(cuid())
+  title        String        @map("title")
+  image        String        @map("image")
+  description  String        @map("description")
+  status       String        @map("status")
+  destination  String        @map(name: "destination")
+  target       Int           @map("target")
+  current      Int           @map("current")
+  participants Int           @map("participants")
+  startTime    DateTime      @map("start_time")
+  endTime      DateTime      @map("end_time")
+  createdAt    DateTime      @default(now()) @map(name: "created_at")
+  updatedAt    DateTime      @updatedAt @map(name: "updated_at")
+  userId       String        
+  user         User          @relation(fields: [userId], references: [id])
+  transactions Transaction[] 
 
   @@map(name: "proposal")
+}
+
+model Transaction {
+  id         String   @id @default(cuid())
+  amount     Int      @map("amount")
+  txHash     String   @unique @map("tx_hash")
+  createdAt  DateTime @default(now()) @map(name: "created_at")
+  updatedAt  DateTime @updatedAt @map(name: "updated_at")
+
+  proposalId String  
+  proposal   Proposal @relation(fields: [proposalId], references: [id])
+  userId     String   
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@map(name: "transaction")
 }
