@@ -14,7 +14,7 @@ import {
     deserializeDatum,
 } from "@meshsdk/core";
 import { HydraInstance, HydraProvider } from "@meshsdk/hydra";
-import { DECIMAL_PLACE, title } from "~/constants/common";
+import { DECIMAL_PLACE, title } from "~/constants/common.constant";
 import { blockfrostProvider } from "~/libs/cardano";
 import plutus from "../../contract/plutus.json";
 import { Plutus } from "~/types";

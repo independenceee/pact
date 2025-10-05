@@ -13,7 +13,7 @@ import CountUp from "react-countup";
 import { APP_NETWORK } from "~/constants/enviroments";
 import Copy from "~/components/copy";
 import { Separator } from "~/components/ui/separator";
-import { DECIMAL_PLACE } from "~/constants/common";
+import { DECIMAL_PLACE } from "~/constants/common.constant";
 import { Button } from "~/components/ui/button";
 
 export default function Account() {

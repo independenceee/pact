@@ -3,7 +3,7 @@ import { BrowserWallet, UTxO, Wallet } from "@meshsdk/core";
 import { Session } from "next-auth";
 import { isNil } from "lodash";
 import { getNonceAddress } from "~/utils/auth";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { APP_NETWORK, APP_NETWORK_ID } from "~/constants/enviroments";
 import { wallets } from "~/constants/wallets.constant";
 import { WalletContext } from "~/contexts/wallet.context";

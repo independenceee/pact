@@ -4,6 +4,7 @@ import React from "react";
 import { SessionProvider, SessionProviderProps } from "next-auth/react";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { Toaster } from "~/components/ui/sonner";
+import { HydraProvider } from "./hydra.provider";
 import { WalletProvider } from "./wallet.provider";
 
 export default function Provider({
@@ -17,7 +18,9 @@ export default function Provider({
     return (
         <SessionProvider session={session}>
             <QueryClientProvider client={queryClient}>
-                <WalletProvider>{children}</WalletProvider>
+                <HydraProvider>
+                    <WalletProvider>{children}</WalletProvider>
+                </HydraProvider>
                 <Toaster />
             </QueryClientProvider>
         </SessionProvider>
