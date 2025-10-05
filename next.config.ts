@@ -1,13 +1,18 @@
-import { createMDX } from "fumadocs-mdx/next";
+import type { NextConfig } from 'next';
+import { createMDX } from 'fumadocs-mdx/next';
 
-const withMDX = createMDX({
-    // customise the config file path
-    // configPath: "source.config.ts"
-});
-
-/** @type {import('next').NextConfig} */
-const config = {
-    reactStrictMode: true,
+const config: NextConfig = {
+  reactStrictMode: true,
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        pathname: '/**',
+        port: '', // Optional, explicitly empty for default port
+      },
+    ],
+  },
 };
 
-export default withMDX(config);
+export default createMDX()(config);

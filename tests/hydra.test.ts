@@ -1,6 +1,6 @@
 import { MeshWallet } from "@meshsdk/core";
 import { HydraInstance, HydraProvider } from "@meshsdk/hydra";
-import { DECIMAL_PLACE } from "~/constants/common";
+import { DECIMAL_PLACE } from "~/constants/common.constant";
 import {
     APP_NETWORK_ID,
     HYDRA_HTTP_URL,
