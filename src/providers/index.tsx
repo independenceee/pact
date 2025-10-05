@@ -18,9 +18,9 @@ export default function Provider({
     return (
         <SessionProvider session={session}>
             <QueryClientProvider client={queryClient}>
-                <HydraProvider>
-                    <WalletProvider>{children}</WalletProvider>
-                </HydraProvider>
+                <WalletProvider>
+                    <HydraProvider>{children}</HydraProvider>
+                </WalletProvider>
                 <Toaster />
             </QueryClientProvider>
         </SessionProvider>

@@ -21,31 +21,30 @@ import {
 import { IoWarningOutline as Warn } from "react-icons/io5";
 import { disburse } from "~/services/hydra.service";
 import { HeadStatus } from "~/constants/common.constant";
+import { useHydra } from "~/hooks/use-hydra";
 
 const Status: React.FC = () => {
-    const queryClient = useQueryClient();
     const router = useRouter();
-    const [isLoading, setIsLoading] = useState(false);
-
-    // Placeholder for headStatus; replace with actual data fetching logic
-    const headStatus = "" as HeadStatus; // Replace with actual state or prop
+    const queryClient = useQueryClient();
+    const { status, isLoading } = useHydra();
+    const [loading, setLoading] = useState<boolean>(false);
 
     const isFanoutEligible = useMemo(
-        () => [HeadStatus.OPEN, HeadStatus.CLOSED, HeadStatus.FANOUT_POSSIBLE].includes(headStatus as HeadStatus),
-        [headStatus],
+        () => [HeadStatus.OPEN, HeadStatus.CLOSED, HeadStatus.FANOUT_POSSIBLE].includes(status as HeadStatus),
+        [status],
     );
 
     const handleFanout = useCallback(async () => {
-        setIsLoading(true);
+        setLoading(true);
         try {
-            await disburse({}); // Assuming disburse is the fanout action
+            await disburse({});
             toast.success("Fanout completed successfully");
-            queryClient.invalidateQueries({ queryKey: ["headStatus"] }); // Invalidate relevant queries
-            router.push("/dashboard"); // Redirect to dashboard or relevant route
+            queryClient.invalidateQueries({ queryKey: ["headStatus"] }); 
+            router.push("/dashboard"); 
         } catch (error) {
             toast.error(error instanceof Error ? error.message : "Failed to fanout");
         } finally {
-            setIsLoading(false);
+            setLoading(false);
         }
     }, [queryClient, router]);
 
@@ -91,7 +90,7 @@ const Status: React.FC = () => {
                         <ClipLoader color="#9333ea" size={14} />
                     ) : (
                         <span className="rounded-md bg-purple-100 px-2 py-1 dark:bg-purple-800/50">
-                            {headStatus || "Initial"}
+                            {status || HeadStatus.IDLE}
                         </span>
                     )}
                 </motion.div>

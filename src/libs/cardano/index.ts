@@ -1,4 +1,4 @@
-import { BLOCKFROST_API_KEY, KOIOS_TOKEN } from "~/constants/enviroments";
+import { BLOCKFROST_API_KEY, KOIOS_TOKEN } from "~/constants/enviroments.constant";
 import { BlockfrostFetcher } from "./blockfrost/fetcher";
 import { BlockfrostProvider } from "@meshsdk/core";
 import { KoiosFetcher } from "./koios/fetcher";

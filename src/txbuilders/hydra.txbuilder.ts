@@ -1,7 +1,7 @@
 import { mConStr0, deserializeAddress, mTuple, mConStr1 } from "@meshsdk/core";
 import { HydraAdapter } from "~/adapters/hydra.adapter";
 import { DECIMAL_PLACE } from "~/constants/common.constant";
-import { APP_NETWORK } from "~/constants/enviroments";
+import { APP_NETWORK } from "~/constants/enviroments.constant";
 
 /**
  * @description

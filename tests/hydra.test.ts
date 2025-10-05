@@ -7,7 +7,7 @@ import {
     HYDRA_WS_URL,
     HYDRA_HTTP_URL_SUB,
     HYDRA_WS_URL_SUB,
-} from "~/constants/enviroments";
+} from "~/constants/enviroments.constant";
 import { blockfrostProvider } from "~/libs/cardano";
 import { HydraTxBuilder } from "~/txbuilders/hydra.txbuilder";
 import { MeshTxBuilder } from "~/txbuilders/mesh.txbuilder";
