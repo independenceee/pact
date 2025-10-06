@@ -82,6 +82,48 @@ export async function getProposals({
 }
 
 /**
+ * @function getProposalByID
+ * @description
+ * Retrieves a single proposal by its unique ID from the database.
+ * Includes the related `user` and `transactions` data.
+ *
+ * @param {string} id - The unique ID of the proposal to retrieve.
+ * @returns {Promise<{ success: boolean; proposal?: any; error?: string }>}
+ * - `success`: Indicates if the request was successful.
+ * - `proposal`: The full proposal object (including user & transactions) if found.
+ * - `error`: Error message if the operation failed.
+ *
+ * @example
+ * const result = await getProposalByID("clxyz1234567890abcdef123456");
+ * if (result.success) {
+ *   console.log(result.proposal);
+ * } else {
+ *   console.error(result.error);
+ * }
+ */
+export async function getProposalByID(id: string) {
+    try {
+        const proposal = await prisma.proposal.findUnique({
+            where: { id },
+            include: {
+                user: true, // Include user who created the proposal
+                transactions: true, // Include related transactions
+            },
+        });
+
+        if (!proposal) {
+            return { success: false, error: "Proposal not found" };
+        }
+
+        return { success: true, proposal };
+    } catch (error) {
+        return { success: false, error: "Failed to fetch proposal" };
+    } finally {
+        await prisma.$disconnect();
+    }
+}
+
+/**
  * @function createProposal
  * @description
  * Creates a new proposal and links it to a user based on their wallet address.
@@ -209,27 +251,6 @@ export async function updateProposal(
     } catch (error) {
         console.error("Error updating proposal:", error);
         return { success: false, error: "Failed to update proposal" };
-    } finally {
-        await prisma.$disconnect();
-    }
-}
-
-export async function getProposalByID(id: string) {
-    try {
-        const proposal = await prisma.proposal.findUnique({
-            where: { id },
-            include: {
-                user: true,
-                transactions: true,
-            },
-        });
-        if (!proposal) {
-            return { success: false, error: "Proposal not found" };
-        }
-        return { success: true, proposal };
-    } catch (error) {
-        console.error("Error fetching proposal:", error);
-        return { success: false, error: "Failed to fetch proposal" };
     } finally {
         await prisma.$disconnect();
     }
