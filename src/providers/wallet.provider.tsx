@@ -87,11 +87,12 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                     throw new Error("Cant get signature");
                 }
                 await signIn("cardano-wallet", {
-                    redirect: true,
+                    redirect: false,
                     callbackUrl: "/",
                     address,
                     message: nonceRes.data,
                     signature,
+                    wallet: name,
                 });
                 setBrowserWallet(browserWallet);
                 setWallet(wallet);
