@@ -4,15 +4,18 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion } from "framer-motion";
-import { useState } from "react";
-import { CldUploadWidget } from "next-cloudinary";
+import { useState, useEffect } from "react";
+import { createProposal } from "~/services/proposal.service";
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
+import { useWallet } from "~/hooks/use-wallet";
+import { toast } from "sonner";
 
-// Define TypeScript interface for form data
 interface ProposalFormData {
     title: string;
     image?: string;
     description: string;
-    status: string;
+    status: "open" | "closed" | "pending";
     destination: string;
     target: number;
     current: number;
@@ -21,13 +24,12 @@ interface ProposalFormData {
     endTime: string;
 }
 
-// Define Zod schema for validation
 const proposalSchema = z
     .object({
         title: z.string().min(1, "Title is required"),
         image: z.string().url("Image must be a valid URL").optional().or(z.literal("")),
         description: z.string().min(1, "Description is required"),
-        status: z.string().min(1, "Status is required"),
+        status: z.enum(["open", "closed", "pending"], { message: "Status must be one of: open, closed, pending" }),
         destination: z.string().min(1, "Destination is required"),
         target: z.number().int().nonnegative("Target must be a non-negative integer"),
         current: z.number().int().nonnegative("Current amount must be a non-negative integer"),
@@ -41,14 +43,15 @@ const proposalSchema = z
     });
 
 export default function CreateProposal() {
-    const [uploading, setUploading] = useState(false);
     const [imageError, setImageError] = useState<string | null>(null);
     const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+    const { address } = useWallet();
 
     const {
         register,
         handleSubmit,
         setValue,
+        reset,
         formState: { errors },
     } = useForm<ProposalFormData>({
         resolver: zodResolver(proposalSchema),
@@ -56,7 +59,7 @@ export default function CreateProposal() {
             title: "",
             image: "",
             description: "",
-            status: "",
+            status: "open",
             destination: "",
             target: 0,
             current: 0,
@@ -66,28 +69,71 @@ export default function CreateProposal() {
         },
     });
 
-    const handleUploadCallback = (result: any, widget: any) => {
-        if (result.event === "success") {
-            const info = result.info as { secure_url: string; public_id: string };
-            setUploadedImage(info.secure_url);
-            setValue("image", info.secure_url, { shouldValidate: true });
+    const uploadImageMutation = useMutation({
+        mutationFn: async (file: File) => {
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "");
+            const { data } = await axios.post(
+                `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+                formData,
+            );
+            return data.secure_url as string;
+        },
+        onSuccess: (url) => {
+            setUploadedImage(url);
+            setValue("image", url, { shouldValidate: true });
             setImageError(null);
-            setUploading(false);
-            widget.close();
-        } else if (result.event === "error") {
-            setImageError("Failed to upload image. Please try again.");
-            setUploading(false);
-        }
+        },
+        onError: () => {
+            setImageError("Failed to upload image.");
+        },
+    });
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setImageError(null);
+        const file = e.target.files?.[0];
+        if (!file) return;
+        uploadImageMutation.mutate(file);
     };
 
-    const handleOpenWidget = (widget: any) => {
-        setUploading(true);
-        setImageError(null);
-    };
+    const { mutate, isPending } = useMutation({
+        mutationFn: createProposal,
+        onSuccess: () => {
+            toast.success("Proposal created successfully!");
+            setUploadedImage(null);
+            setImageError(null);
+            reset();
+        },
+        onError: (error: Error) => {
+            alert(error.message || "Failed to create proposal.");
+        },
+    });
 
     const onSubmit = async (data: ProposalFormData) => {
-        console.log("Form submitted:", data);
-        // Add logic to send data to your backend API
+        if (!uploadedImage && !data.image) {
+            setImageError("Please upload an image");
+            return;
+        }
+
+        const finalData = {
+            ...data,
+            image: uploadedImage || data.image || "",
+        };
+
+        mutate({
+            title: finalData.title,
+            image: uploadedImage || finalData.image || "",
+            description: finalData.description,
+            status: finalData.status,
+            destination: finalData.destination,
+            target: finalData.target,
+            current: finalData.current,
+            participants: finalData.participants,
+            startTime: new Date(finalData.startTime),
+            endTime: new Date(finalData.endTime),
+            walletAddress: address as string,
+        });
     };
 
     return (
@@ -141,78 +187,99 @@ export default function CreateProposal() {
                         />
                         {errors.title && <p className="text-red-400 text-xs">{errors.title.message}</p>}
                     </div>
+                    {/* Image Upload */}
                     <div className="space-y-1">
                         <label className="block text-xs font-semibold text-gray-200">Image Upload</label>
-                        <div className=" border-t border-gray-800">
-                            <div className="">
-                                <div className="border rounded-xl border-dashed border-purple-500">
-                                    <div className="relative">
-                                        <CldUploadWidget
-                                            uploadPreset="hydrapact"
-                                            options={{
-                                                sources: ["local"],
-                                                multiple: false,
-                                                maxFiles: 1,
-                                                resourceType: "image",
-                                                maxFileSize: 5 * 1024 * 1024, // 5MB
-                                                cropping: false,
-                                                showAdvancedOptions: false,
-                                            }}
-                                            onOpen={handleOpenWidget}
-                                            onUpload={handleUploadCallback}
+                        <div
+                            className={`relative border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center transition-all duration-200 cursor-pointer bg-gray-800/50 hover:border-purple-500 ${
+                                uploadImageMutation.isPending ? "opacity-60 pointer-events-none" : ""
+                            }`}
+                            onClick={() =>
+                                !uploadImageMutation.isPending &&
+                                document.getElementById("proposal-image-input")?.click()
+                            }
+                            style={{ minHeight: "140px" }}
+                        >
+                            <input
+                                id="proposal-image-input"
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageChange}
+                                className="hidden"
+                                disabled={uploadImageMutation.isPending}
+                            />
+                            {!uploadedImage && !uploadImageMutation.isPending && (
+                                <>
+                                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-900 text-purple-400 mb-3">
+                                        <svg
+                                            className="w-8 h-8"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                            viewBox="0 0 24 24"
                                         >
-                                            {({ open }) => (
-                                                <div
-                                                    onClick={() => open?.()}
-                                                    className={`cursor-pointer flex flex-col items-center p-5  bg-gray-800/50 rounded-xl transition-all duration-200 ${
-                                                        uploading ? "opacity-50" : ""
-                                                    }`}
-                                                >
-                                                    <div className="mb-5 flex justify-center">
-                                                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-800 text-gray-400">
-                                                            <svg
-                                                                className="fill-current"
-                                                                width="24"
-                                                                height="24"
-                                                                viewBox="0 0 29 28"
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                            >
-                                                                <path
-                                                                    fillRule="evenodd"
-                                                                    clipRule="evenodd"
-                                                                    d="M14.5019 3.91699C14.2852 3.91699 14.0899 4.00891 13.953 4.15589L8.57363 9.53186C8.28065 9.82466 8.2805 10.2995 8.5733 10.5925C8.8661 10.8855 9.34097 10.8857 9.63396 10.5929L13.7519 6.47752V18.667C13.7519 19.0812 14.0877 19.417 14.5019 19.417C14.9161 19.417 15.2519 19.0812 15.2519 18.667V6.48234L19.3653 10.5929C19.6583 10.8857 20.1332 10.8855 20.426 10.5925C20.7188 10.2995 20.7186 9.82463 20.4256 9.53184L15.0838 4.19378C14.9463 4.02488 14.7367 3.91699 14.5019 3.91699ZM5.91626 18.667C5.91626 18.2528 5.58047 17.917 5.16626 17.917C4.75205 17.917 4.41626 18.2528 4.41626 18.667V21.8337C4.41626 23.0763 5.42362 24.0837 6.66626 24.0837H22.3339C23.5766 24.0837 24.5839 23.0763 24.5839 21.8337V18.667C24.5839 18.2528 24.2482 17.917 23.8339 17.917C23.4197 17.917 23.0839 18.2528 23.0839 18.667V21.8337C23.0839 22.2479 22.7482 22.5837 22.3339 22.5837H6.66626C6.25205 22.5837 5.91626 22.2479 5.91626 21.8337V18.667Z"
-                                                                ></path>
-                                                            </svg>
-                                                        </div>
-                                                    </div>
-                                                    <h4 className="mb-3 font-semibold text-sm text-gray-100">
-                                                        {uploading ? "Uploading..." : "Drag & Drop Files Here"}
-                                                    </h4>
-                                                    <span className="text-center mb-5 block w-full max-w-[290px] text-xs text-gray-400">
-                                                        Drag and drop your PNG, JPG, WebP, SVG images here or browse
-                                                    </span>
-                                                    <span className="font-medium underline text-xs text-purple-500 hover:text-purple-400">
-                                                        Browse File
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </CldUploadWidget>
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5-5m0 0l5 5m-5-5v12"
+                                            />
+                                        </svg>
                                     </div>
+                                    <span className="block text-sm text-gray-400 mb-1">
+                                        Drag & drop or click to upload
+                                    </span>
+                                    <span className="text-xs text-gray-500">PNG, JPG, WebP, SVG (max 10MB)</span>
+                                </>
+                            )}
+                            {uploadImageMutation.isPending && (
+                                <div className="flex flex-col items-center">
+                                    <svg
+                                        className="animate-spin h-8 w-8 text-purple-400 mb-2"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <circle
+                                            className="opacity-25"
+                                            cx="12"
+                                            cy="12"
+                                            r="10"
+                                            stroke="currentColor"
+                                            strokeWidth="4"
+                                        ></circle>
+                                        <path
+                                            className="opacity-75"
+                                            fill="currentColor"
+                                            d="M4 12a8 8 0 018-8v8z"
+                                        ></path>
+                                    </svg>
+                                    <span className="text-sm text-gray-400">Uploading image...</span>
                                 </div>
-                            </div>
+                            )}
+                            {uploadedImage && !uploadImageMutation.isPending && (
+                                <div className="flex flex-col items-center w-full">
+                                    <img
+                                        src={uploadedImage}
+                                        alt="Uploaded"
+                                        className="w-32 h-32 object-cover rounded-lg border border-gray-700 shadow-md mb-2"
+                                    />
+                                    <span className="text-xs text-green-400">Image uploaded successfully!</span>
+                                    <button
+                                        type="button"
+                                        className="mt-2 text-xs text-red-400 hover:underline"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setUploadedImage(null);
+                                            setValue("image", "", { shouldValidate: true });
+                                        }}
+                                    >
+                                        Remove
+                                    </button>
+                                </div>
+                            )}
                         </div>
-                        {uploadedImage && (
-                            <div className="mt-2">
-                                <p className="text-xs text-green-400">Image uploaded successfully!</p>
-                                <img
-                                    src={uploadedImage}
-                                    alt="Uploaded"
-                                    className="mt-2 w-32 h-32 object-cover rounded-lg border border-gray-700"
-                                />
-                            </div>
-                        )}
-                        {errors.image && <p className="text-red-400 text-xs">{errors.image.message}</p>}
-                        {imageError && <p className="text-red-400 text-xs">{imageError}</p>}
+                        {errors.image && <p className="text-red-400 text-xs mt-1">{errors.image.message}</p>}
+                        {imageError && <p className="text-red-400 text-xs mt-1">{imageError}</p>}
                     </div>
                     <div className="space-y-1">
                         <label className="block text-xs font-semibold text-gray-200">Description</label>
@@ -226,7 +293,21 @@ export default function CreateProposal() {
                         />
                         {errors.description && <p className="text-red-400 text-xs">{errors.description.message}</p>}
                     </div>
-
+                    <div className="space-y-1">
+                        <label className="block text-xs font-semibold text-gray-200">Status</label>
+                        <select
+                            {...register("status")}
+                            className={`w-full p-2.5 rounded-lg bg-gray-800/50 border-2 ${
+                                errors.status ? "border-red-500" : "border-gray-700"
+                            } text-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200`}
+                        >
+                            <option value="">Select status</option>
+                            <option value="open">Open</option>
+                            <option value="closed">Closed</option>
+                            <option value="pending">Pending</option>
+                        </select>
+                        {errors.status && <p className="text-red-400 text-xs">{errors.status.message}</p>}
+                    </div>
                     <div className="space-y-1">
                         <label className="block text-xs font-semibold text-gray-200">Destination</label>
                         <input
@@ -295,7 +376,7 @@ export default function CreateProposal() {
                         <motion.button
                             type="submit"
                             className="relative w-full py-3 px-6 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-purple-500/25 transition-all duration-300 flex items-center justify-center gap-3 overflow-hidden group"
-                            disabled={uploading}
+                            disabled={isPending}
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                         >
@@ -315,7 +396,7 @@ export default function CreateProposal() {
                             </svg>
                             <div className="absolute inset-0 bg-gradient-to-r from-purple-700 to-blue-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                         </motion.button>
-                        {uploading && (
+                        {isPending && (
                             <p className="text-center text-sm text-gray-400 mt-2">Uploading your proposal...</p>
                         )}
                     </div>

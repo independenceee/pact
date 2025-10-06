@@ -1,10 +1,7 @@
 "use server";
 
-import { PrismaClient } from "@prisma/client";
+import prisma from "~/libs/prisma";
 
-const prisma = new PrismaClient();
-
-// Tạo một Proposal mới
 export async function createProposal({
     title,
     current,
@@ -16,7 +13,7 @@ export async function createProposal({
     startTime,
     status,
     target,
-    userId,
+    walletAddress,
 }: {
     title: string;
     image: string;
@@ -28,9 +25,19 @@ export async function createProposal({
     participants: number;
     startTime: Date;
     endTime: Date;
-    userId: string;
+    walletAddress: string;
 }) {
     try {
+        const user = await prisma.user.findFirst({
+            where: {
+                address: walletAddress,
+            },
+        });
+
+        if (!user) {
+            throw new Error("User not found with this wallet address");
+        }
+
         const proposal = await prisma.proposal.create({
             data: {
                 title: title,
@@ -43,7 +50,7 @@ export async function createProposal({
                 participants: participants,
                 startTime: startTime,
                 endTime: endTime,
-                userId: userId,
+                userId: user.id, // Sử dụng userId của user tìm được
             },
             include: {
                 user: true,
@@ -52,7 +59,10 @@ export async function createProposal({
         });
         return { success: true, proposal };
     } catch (error) {
-        throw new Error(error as string);
+        if (error instanceof Error) {
+            throw new Error(error.message);
+        }
+        throw new Error("Failed to create proposal");
     } finally {
         await prisma.$disconnect();
     }

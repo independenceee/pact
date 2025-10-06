@@ -34,6 +34,7 @@
         "cbor": "^10.0.11",
         "chart.js": "^4.5.0",
         "class-variance-authority": "^0.7.1",
+        "cloudinary": "^2.7.0",
         "clsx": "^2.1.1",
         "framer-motion": "^12.23.22",
         "fumadocs-core": "^15.8.1",
