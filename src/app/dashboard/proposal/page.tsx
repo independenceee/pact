@@ -9,6 +9,8 @@ import { router } from "~/constants/router.constant";
 const filters = ["All", "Active", "Completed", "Popular"] as const;
 
 export default function Page() {
+
+    
     return (
         <motion.div
             className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 py-8 px-4 sm:px-6 lg:px-8 relative"
