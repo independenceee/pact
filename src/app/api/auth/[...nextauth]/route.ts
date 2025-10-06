@@ -15,12 +15,14 @@ export const authOptions: NextAuthOptions = {
                 address: { label: "Wallet Address", type: "text" },
                 signature: { label: "Signature", type: "text" },
                 message: { label: "Message", type: "text" },
+                wallet: { label: "Wallet Name", type: "text" },
             },
             async authorize(credentials) {
                 if (!credentials?.address || !credentials?.signature || !credentials?.message) {
                     return null;
                 }
                 const address = String(credentials.address);
+                const walletName = String(credentials.wallet ?? "");
                 type WalletUser = User & { address?: string; wallet?: string };
 
                 const user = await prisma.user.upsert({
@@ -40,7 +42,7 @@ export const authOptions: NextAuthOptions = {
                     name: "User",
                     image: null,
                     address,
-                    wallet: address,
+                    wallet: walletName,
                 };
             },
         }),
@@ -51,20 +53,21 @@ export const authOptions: NextAuthOptions = {
             return baseUrl;
         },
         async jwt({ token, user, account }: { token: JWT; user?: User; account?: Account | null }) {
-            type WalletToken = JWT & { address?: string };
-            type WalletUser = User & { address?: string };
+            type WalletToken = JWT & { address?: string; wallet?: string | undefined };
+            type WalletUser = User & { address?: string; wallet?: string };
             if (user && account?.provider === "cardano-wallet") {
                 (token as WalletToken).address = (user as WalletUser).address;
+                (token as WalletToken).wallet = (user as WalletUser).wallet;
             }
             return token;
         },
         async session({ session, token }: { session: Session; token: JWT }) {
-            type WalletToken = JWT & { address?: string };
+            type WalletToken = JWT & { address?: string; wallet?: string | undefined };
             const addr = (token as WalletToken).address;
             if (session.user && addr) {
                 (session.user as typeof session.user & { address?: string; wallet?: string }).address = addr;
                 (session.user as typeof session.user & { address?: string; wallet?: string }).wallet =
-                    (session.user as any).wallet ?? addr;
+                    (token as WalletToken).wallet ?? "";
             }
             if (!session.expires) {
                 session.expires = new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString();
