@@ -35,8 +35,6 @@ export const authOptions: NextAuthOptions = {
                     update: {},
                 });
 
-                console.log(user);
-
                 return {
                     id: user.id,
                     name: "User",

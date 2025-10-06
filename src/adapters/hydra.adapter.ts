@@ -430,25 +430,44 @@ export class HydraAdapter {
     public commit = async ({
         input,
         amount = 10,
+        exactly = false,
     }: {
         input?: {
             txHash: string;
             outputIndex: number;
         };
         amount?: number;
+        exactly?: boolean;
     }): Promise<string> => {
         await this.hydraProvider.connect();
-        const utxos = await this.meshWallet.getUtxos();
-        const utxoOnlyLovelace = this.getUTxOOnlyLovelace({
-            utxos: utxos,
-            quantity: DECIMAL_PLACE * amount,
-        });
+        if (!exactly) {
+            const utxos = await this.meshWallet.getUtxos();
+            const utxoOnlyLovelace = this.getUTxOOnlyLovelace({
+                utxos: utxos,
+                quantity: DECIMAL_PLACE * amount,
+            });
 
-        if (input) {
-            return await this.hydraInstance.commitFunds(input.txHash, input.outputIndex);
+            if (input) {
+                return await this.hydraInstance.commitFunds(input.txHash, input.outputIndex);
+            }
+
+            return await this.hydraInstance.commitFunds(
+                utxoOnlyLovelace.input.txHash,
+                utxoOnlyLovelace.input.outputIndex,
+            );
         }
 
-        return await this.hydraInstance.commitFunds(utxoOnlyLovelace.input.txHash, utxoOnlyLovelace.input.outputIndex);
+        const unsignedTx = await this.meshTxBuilder
+            .txIn(input?.txHash as string, input?.outputIndex as number)
+            .setFee("0")
+            .changeAddress(await this.meshWallet.getChangeAddress())
+            .selectUtxosFrom(await this.meshWallet.getUtxos())
+            .complete();
+        return await this.hydraInstance.commitBlueprint(input?.txHash as string, input?.outputIndex as number, {
+            type: "Tx ConwayEra",
+            cborHex: unsignedTx,
+            description: "Commit Blueprint",
+        });
     };
 
     /**
