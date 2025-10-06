@@ -7,7 +7,7 @@ import { sidebars } from "~/constants/sidebars.constant";
 export default function Sidebar() {
     const pathname = usePathname();
     return (
-        <aside className="static max-md:hidden top-16 left-0 h-68 w-70 bg-gradient-to-b from-gray-900 to-gray-800 text-white p-6 shadow-2xl rounded transition-all duration-300 ease-in-out ">
+        <aside className="static max-md:hidden top-16 left-0 h-52 w-70 bg-gradient-to-b from-gray-900 to-gray-800 text-white p-6 shadow-2xl rounded transition-all duration-300 ease-in-out ">
             <nav className="h-full overflow-y-auto pr-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-500/50 hover:[&::-webkit-scrollbar-thumb]:bg-gray-400">
                 <ul className="space-y-2">
                     {sidebars.map((sidebar, index) => (

@@ -2,6 +2,7 @@ import NextAuth from "next-auth/next";
 import type { NextAuthOptions, Account, User, Session } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
+import prisma from "~/libs/prisma";
 
 export const authOptions: NextAuthOptions = {
     secret: process.env.NEXTAUTH_SECRET,
@@ -21,14 +22,26 @@ export const authOptions: NextAuthOptions = {
                 }
                 const address = String(credentials.address);
                 type WalletUser = User & { address?: string; wallet?: string };
-                const user: WalletUser = {
-                    id: address,
+
+                const user = await prisma.user.upsert({
+                    where: {
+                        address,
+                    },
+                    create: {
+                        address,
+                    },
+                    update: {},
+                });
+
+                console.log(user);
+
+                return {
+                    id: user.id,
                     name: "User",
                     image: null,
                     address,
                     wallet: address,
                 };
-                return user;
             },
         }),
     ],
@@ -50,17 +63,19 @@ export const authOptions: NextAuthOptions = {
             const addr = (token as WalletToken).address;
             if (session.user && addr) {
                 (session.user as typeof session.user & { address?: string; wallet?: string }).address = addr;
-                (session.user as typeof session.user & { address?: string; wallet?: string }).wallet = (session.user as any).wallet ?? addr;
+                (session.user as typeof session.user & { address?: string; wallet?: string }).wallet =
+                    (session.user as any).wallet ?? addr;
             }
             if (!session.expires) {
                 session.expires = new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString();
             }
             return session;
         },
-        async signIn(_: { user: User; account: Account | null }) { return true; },
+        async signIn(_: { user: User; account: Account | null }) {
+            return true;
+        },
     },
 };
 
 const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };
-

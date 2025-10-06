@@ -1,10 +1,12 @@
 import Pagination from "~/components/pagination";
+import Status from "~/components/status";
 
 export default function Page() {
     return (
         <main className="font-sans bg-gray-900 snap-y snap-mandatory">
             <div className="bg-gray-900 dark:bg-gray-900 py-8">
-                <div className="max-w-screen-xl mx-auto p-5 sm:p-10 md:p-16">
+                <div className="max-w-screen-xl mx-auto p-5 sm:p-10 md:p-16 flex flex-col gap-4">
+                    <Status />
                     <div className="flex flex-col md:flex-row -mx-4">
                         <div className="md:flex-1 px-4">
                             <div className="h-[460px] rounded-lg bg-gray-800/80 dark:bg-gray-800/80 mb-4">

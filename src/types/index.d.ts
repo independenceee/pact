@@ -1,17 +1,29 @@
 import { Icons } from "@/components/common/icons";
+import { DataSignature } from "@meshsdk/core";
 
 declare module "next-auth" {
     interface User {
         id: string;
         wallet: string;
         address: string;
+        // signature: DataSignature;
     }
     interface Session {
         user: User;
     }
 }
 
-declare const status: readonly ["IDLE", "DISCONNECTED", "CONNECTING", "CONNECTED", "INITIALIZING", "OPEN", "CLOSED", "FANOUT_POSSIBLE", "FINAL"];
+declare const status: readonly [
+    "IDLE",
+    "DISCONNECTED",
+    "CONNECTING",
+    "CONNECTED",
+    "INITIALIZING",
+    "OPEN",
+    "CLOSED",
+    "FANOUT_POSSIBLE",
+    "FINAL",
+];
 
 export type FilterType = {
     range: DateRange;
