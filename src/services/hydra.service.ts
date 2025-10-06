@@ -1,7 +1,7 @@
 "use server";
 
 import { HydraProvider } from "@meshsdk/hydra";
-import { HYDRA_HTTP_URL, HYDRA_HTTP_URL_SUB, HYDRA_WS_URL, HYDRA_WS_URL_SUB } from "~/constants/enviroments";
+import { HYDRA_HTTP_URL, HYDRA_HTTP_URL_SUB, HYDRA_WS_URL, HYDRA_WS_URL_SUB } from "~/constants/enviroments.constant";
 
 export const disburse = async function ({}: {}) {};
 

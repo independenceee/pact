@@ -1,10 +1,12 @@
 import Pagination from "~/components/pagination";
+import Status from "~/components/status";
 
 export default function Page() {
     return (
         <main className="font-sans bg-gray-900 snap-y snap-mandatory">
             <div className="bg-gray-900 dark:bg-gray-900 py-8">
-                <div className="max-w-screen-xl mx-auto p-5 sm:p-10 md:p-16">
+                <div className="max-w-screen-xl mx-auto p-5 sm:p-10 md:p-16 flex flex-col gap-4">
+                    <Status />
                     <div className="flex flex-col md:flex-row -mx-4">
                         <div className="md:flex-1 px-4">
                             <div className="h-[460px] rounded-lg bg-gray-800/80 dark:bg-gray-800/80 mb-4">
@@ -79,53 +81,70 @@ export default function Page() {
                         </div>
                     </div>
 
-                    <section className="mt-4">
-                        <div className="overflow-x-auto bg-gray-800/80 dark:bg-gray-800/80 rounded shadow-lg hover:shadow-purple-500/10 border border-gray-700/50">
-                            <table className="w-full table-auto">
+                    <section className="space-y-4">
+                        <h3 className="text-xl font-semibold text-gray-200">Recent Transactions</h3>
+                        <div className="overflow-x-auto bg-gray-800/40 rounded-lg backdrop-blur-sm border border-gray-700/30">
+                            <table className="w-full">
                                 <thead>
-                                    <tr className="bg-gray-900 dark:bg-gray-900 text-gray-300 dark:text-gray-300 uppercase text-sm leading-normal">
-                                        <th className="py-4 px-6 text-base text-center">Tx Hash</th>
-                                        <th className="py-4 px-6 text-base text-center">Wallet Address</th>
-                                        <th className="py-4 px-6 text-base text-center">Amount</th>
-                                        <th className="py-4 px-6 text-base text-center">Status</th>
+                                    <tr className="border-b border-gray-700/50">
+                                        <th className="py-4 px-6 text-left text-gray-300 font-semibold">
+                                            Transaction Hash
+                                        </th>
+                                        <th className="py-4 px-6 text-left text-gray-300 font-semibold">
+                                            Wallet Address
+                                        </th>
+                                        <th className="py-4 px-6 text-right text-gray-300 font-semibold">Amount</th>
+                                        <th className="py-4 px-6 text-center text-gray-300 font-semibold">Status</th>
                                     </tr>
                                 </thead>
-                                <tbody className="text-gray-300 dark:text-gray-300 text-sm">
-                                    <tr className="border-b border-gray-700 dark:border-gray-700 hover:bg-gray-700/90 dark:hover:bg-gray-700/90">
-                                        <td className="py-4 px-6 text-base text-center">5</td>
-                                        <td className="py-4 px-6 text-base text-center">Mandan Pillai</td>
-                                        <td className="py-4 px-6 text-base text-center">mandan@kerala.com</td>
-                                        <td className="py-4 px-6 text-base text-center">Complete</td>
-                                    </tr>
-                                    <tr className="border-b border-gray-700 dark:border-gray-700 hover:bg-gray-700/90 dark:hover:bg-gray-700/90">
-                                        <td className="py-4 px-6 text-base text-center">5</td>
-                                        <td className="py-4 px-6 text-base text-center">Mandan Pillai</td>
-                                        <td className="py-4 px-6 text-base text-center">mandan@kerala.com</td>
-                                        <td className="py-4 px-6 text-base text-center">Complete</td>
-                                    </tr>
-                                    <tr className="border-b border-gray-700 dark:border-gray-700 hover:bg-gray-700/90 dark:hover:bg-gray-700/90">
-                                        <td className="py-4 px-6 text-base text-center">5</td>
-                                        <td className="py-4 px-6 text-base text-center">Mandan Pillai</td>
-                                        <td className="py-4 px-6 text-base text-center">mandan@kerala.com</td>
-                                        <td className="py-4 px-6 text-base text-center">Complete</td>
-                                    </tr>
-                                    <tr className="border-b border-gray-700 dark:border-gray-700 hover:bg-gray-700/90 dark:hover:bg-gray-700/90">
-                                        <td className="py-4 px-6 text-base text-center">5</td>
-                                        <td className="py-4 px-6 text-base text-center">Mandan Pillai</td>
-                                        <td className="py-4 px-6 text-base text-center">mandan@kerala.com</td>
-                                        <td className="py-4 px-6 text-base text-center">Complete</td>
-                                    </tr>
-                                    <tr className="border-b border-gray-700 dark:border-gray-700 hover:bg-gray-700/90 dark:hover:bg-gray-700/90">
-                                        <td className="py-4 px-6 text-base text-center">5</td>
-                                        <td className="py-4 px-6 text-base text-center">Mandan Pillai</td>
-                                        <td className="py-4 px-6 text-base text-center">mandan@kerala.com</td>
-                                        <td className="py-4 px-6 text-base text-center">Complete</td>
-                                    </tr>
+                                <tbody>
+                                    {[
+                                        {
+                                            hash: "tx_7f9e8d...",
+                                            wallet: "addr1q8x5...",
+                                            amount: "15 ADA",
+                                            status: "Confirmed",
+                                        },
+                                        {
+                                            hash: "tx_6a5b4c...",
+                                            wallet: "addr1q9y6...",
+                                            amount: "10 ADA",
+                                            status: "Pending",
+                                        },
+                                        {
+                                            hash: "tx_3d2e1f...",
+                                            wallet: "addr1q7z4...",
+                                            amount: "20 ADA",
+                                            status: "Confirmed",
+                                        },
+                                    ].map((tx, i) => (
+                                        <tr
+                                            key={i}
+                                            className="border-b border-gray-700/50 hover:bg-purple-500/5 transition-colors"
+                                        >
+                                            <td className="py-4 px-6 text-gray-300 font-mono">{tx.hash}</td>
+                                            <td className="py-4 px-6 text-gray-300 font-mono">{tx.wallet}</td>
+                                            <td className="py-4 px-6 text-right text-gray-300">{tx.amount}</td>
+                                            <td className="py-4 px-6 text-center">
+                                                <span
+                                                    className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-medium ${
+                                                        tx.status === "Confirmed"
+                                                            ? "bg-green-500/20 text-green-400"
+                                                            : "bg-yellow-500/20 text-yellow-400"
+                                                    }`}
+                                                >
+                                                    {tx.status}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
                                 </tbody>
                             </table>
                         </div>
 
-                        <Pagination currentPage={1} setCurrentPage={null!} totalPages={2} />
+                        <div className="flex justify-center mt-6">
+                            <Pagination currentPage={1} setCurrentPage={null!} totalPages={2} />
+                        </div>
                     </section>
                 </div>
             </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { THEME_KEY } from "~/constants/keys";
+import { THEME_KEY } from "~/constants/keys.constant";
 import { useMedia } from "~/hooks/use-media";
 import { ThemeOption } from "~/options/theme.option";
 import { useEffect, useState } from "react";

@@ -3,8 +3,8 @@
 import { createContext } from "react";
 
 export type HydraContextType = {
-    headStatus: string;
-    headStatusLoading: boolean;
+    status: string;
+    isLoading: boolean;
 };
 
 export const HydraContext = createContext<HydraContextType>(null!);

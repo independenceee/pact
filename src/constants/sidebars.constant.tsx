@@ -1,7 +1,6 @@
 import { MdSpaceDashboard as Dashboard } from "react-icons/md";
 import { AiFillCodeSandboxCircle as Proposal } from "react-icons/ai";
-import { MdAccountCircle as Account } from "react-icons/md";
-import { FaCalendar as Calendar } from "react-icons/fa6";
+import { VscAccount as Account } from "react-icons/vsc";
 import { cn } from "~/libs/utils";
 import { router } from "./router.constant";
 
@@ -21,17 +20,10 @@ export const sidebars = [
         label: "Proposal",
     },
     {
-        href: router.proposal,
+        href: router.account,
         Icon: ({ className }: { className?: string }) => {
             return <Account className={cn(className)} />;
         },
         label: "Account",
-    },
-    {
-        href: router.proposal,
-        Icon: ({ className }: { className?: string }) => {
-            return <Calendar className={cn(className)} />;
-        },
-        label: "Calendar",
     },
 ];

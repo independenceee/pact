@@ -1,7 +1,7 @@
 import { deserializeAddress, mConStr0, mConStr1, mTuple } from "@meshsdk/core";
 import { MeshAdapter } from "~/adapters/mesh.adapter";
 import { DECIMAL_PLACE } from "~/constants/common.constant";
-import { APP_NETWORK } from "~/constants/enviroments";
+import { APP_NETWORK } from "~/constants/enviroments.constant";
 
 /**
  * @description

@@ -4,7 +4,7 @@ import { Session } from "next-auth";
 import { isNil } from "lodash";
 import { getNonceAddress } from "~/utils/auth";
 import { signIn, useSession } from "next-auth/react";
-import { APP_NETWORK, APP_NETWORK_ID } from "~/constants/enviroments";
+import { APP_NETWORK, APP_NETWORK_ID } from "~/constants/enviroments.constant";
 import { wallets } from "~/constants/wallets.constant";
 import { WalletContext } from "~/contexts/wallet.context";
 
@@ -55,7 +55,9 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const connect = async (session: Session | null, wallet: Wallet): Promise<void> => {
         try {
             const { name } = wallet;
-            try { localStorage.setItem("lastWallet", name); } catch (_) {}
+            try {
+                localStorage.setItem("lastWallet", name);
+            } catch (_) {}
             const browserWallet: BrowserWallet = await BrowserWallet.enable(name.toLowerCase());
             if (!browserWallet) {
                 throw new Error("Failed to connect wallet");
@@ -132,7 +134,9 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         try {
             let walletName = (session?.user as { wallet?: string } | undefined)?.wallet;
             if (!walletName) {
-                try { walletName = localStorage.getItem("lastWallet") || undefined; } catch (_) {}
+                try {
+                    walletName = localStorage.getItem("lastWallet") || undefined;
+                } catch (_) {}
             }
 
             if (walletName) {

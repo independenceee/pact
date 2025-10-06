@@ -5,5 +5,6 @@ export const router = {
 
     dashboard: "/dashboard",
     proposal: "/dashboard/proposal",
+    account: "/dashboard/account",
     create: "/dashboard/proposal/create",
 };
