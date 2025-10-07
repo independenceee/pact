@@ -77,7 +77,7 @@ export default function AccountPage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.4 }}
                     >
-                        <Card className="hover:border-purple-500/30">
+                        <Card className="hover:border-purple-500/30 h-full">
                             <CardHeader>
                                 <CardTitle>Wallet Information</CardTitle>
                                 <CardDescription>Your connected wallet details and balance</CardDescription>

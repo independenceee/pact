@@ -44,12 +44,14 @@ export default function Account() {
         <Popover>
             <PopoverTrigger
                 className={
-                    "items-center gap-2 rounded-3xl border border-gray-300 bg-white pr-4 pl-1 py-1 text-sm font-medium text-gray-800 shadow-lg transition-all duration-200 hover:border-gray-400 hover:bg-gray-100 dark:border-white/30 dark:bg-gray-800/50 dark:text-white dark:hover:border-white/50 dark:hover:bg-gray-700/50 hidden xl:inline-flex"
+                    "items-center gap-2 rounded-3xl border border-purple-500/40 bg-gradient-to-r from-gray-900/80 to-gray-800/80 pr-4 pl-1 py-1 text-sm font-medium text-purple-200 shadow-xl transition-all duration-200 hover:border-purple-400 hover:bg-gray-800/90 hidden xl:inline-flex"
                 }
             >
                 <div className={"h-8 w-8"}>
                     <Image
-                        className={"h-full w-full rounded-full bg-gray-600 object-cover p-1 dark:bg-slate-700"}
+                        className={
+                            "h-full w-full rounded-full bg-gradient-to-br from-purple-400 to-blue-400 object-cover p-1 bg-slate-700"
+                        }
                         src={wallet?.icon || ""}
                         width={32}
                         height={32}
@@ -57,24 +59,26 @@ export default function Account() {
                     />
                 </div>
                 <div className="">
-                    <h2 className="text-[13px] leading-4 text-gray-800 dark:text-white">
+                    <h2 className="text-[13px] leading-4 font-semibold  text-purple-200">
                         {address?.slice(0, 12)}...{address?.slice(-4)}
                     </h2>
-                    <p className={"text-left text-[14px] leading-4 text-gray-700 dark:text-gray-300"}>
+                    <p className={"text-left text-[15px] leading-4 font-bold  text-blue-300"}>
                         <CountUp start={0} end={Number((balance / DECIMAL_PLACE).toFixed(6))} decimals={6} /> ₳
                     </p>
                 </div>
             </PopoverTrigger>
             <PopoverContent
                 className={
-                    "mt-2 flex min-w-[315px] flex-col gap-4 rounded-xl p-5 bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100"
+                    "mt-2 flex min-w-[315px] flex-col gap-4 rounded-xl p-5    bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-100 border  border-purple-700/40 shadow-2xl"
                 }
                 align="end"
             >
                 <div className="flex items-center gap-3">
                     <div className={"h-10 w-10"}>
                         <Image
-                            className={"h-full w-full object-cover"}
+                            className={
+                                "h-full w-full object-cover rounded-full bg-gradient-to-br from-purple-400 to-blue-400"
+                            }
                             src={wallet?.icon || ""}
                             alt={`${wallet?.name} icon`}
                             width={32}
@@ -82,49 +86,49 @@ export default function Account() {
                         />
                     </div>
                     <div>
-                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white capitalize">
+                        <h2 className="text-xl font-bold  text-purple-200 capitalize">
                             {wallet?.name}
                         </h2>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 capitalize"> {APP_NETWORK}</p>
+                        <p className="text-sm  text-blue-300 capitalize"> {APP_NETWORK}</p>
                     </div>
                 </div>
-                <Separator className="my-1 bg-gray-300 dark:bg-slate-500" />
+                <Separator className="my-1  bg-purple-700/40" />
                 <div className="space-y-2">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <p className="text-sm text-gray-500 dark:text-gray-400">Stake:</p>
-                            <span className="text-sm text-gray-900 dark:text-gray-100">
+                            <p className="text-sm  text-gray-400">Stake:</p>
+                            <span className="text-sm  text-purple-200">
                                 {shortenString(stakeAddress || "", 11)}
                             </span>
                         </div>
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                            className="h-8 w-8 text-purple-400  hover:text-purple-200"
                         >
                             <Copy className="h-4 w-4" content={stakeAddress || ""} />
                         </Button>
                     </div>
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <p className="text-sm text-gray-500 dark:text-gray-400">Change:</p>
-                            <span className="text-sm text-gray-900 dark:text-gray-100">
+                            <p className="text-sm  text-gray-400">Change:</p>
+                            <span className="text-sm  text-purple-200">
                                 {shortenString(address || "", 10)}
                             </span>
                         </div>
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                            className="h-8 w-8 text-purple-400  hover:text-purple-200"
                         >
                             <Copy className="h-4 w-4" content={stakeAddress || ""} />
                         </Button>
                     </div>
                 </div>
-                <div className={"leading-0 h-[1px] overflow-hidden bg-gray-300 dark:bg-slate-500"} />
+                <div className={"leading-0 h-[1px] overflow-hidden  bg-purple-700/40"} />
                 <div className={"relative flex items-center"}>
                     <Link
-                        className="flex cursor-pointer items-center gap-1 text-gray-500 dark:text-gray-300"
+                        className="flex cursor-pointer items-center gap-1  text-blue-300 hover:underline"
                         href={"/"}
                     >
                         <MdOutlineFeedback />
@@ -133,7 +137,7 @@ export default function Account() {
                 </div>
                 <div className={"relative flex items-center"}>
                     <Link
-                        className="flex cursor-pointer items-center gap-1 text-gray-500 dark:text-gray-300"
+                        className="flex cursor-pointer items-center gap-1  text-blue-300 hover:underline"
                         href={"/"}
                     >
                         <IoIosHelpCircleOutline />
@@ -141,12 +145,12 @@ export default function Account() {
                     </Link>
                 </div>
 
-                <div className={"leading-0 h-[1px] overflow-hidden bg-gray-300 dark:bg-slate-500"} />
+                <div className={"leading-0 h-[1px] overflow-hidden  bg-purple-700/40"} />
                 <div className={"flex flex-col items-center gap-3"}>
                     <Button
                         onClick={() => signOut()}
                         className={
-                            "w-[180px] cursor-pointer rounded-[35px] bg-gray-300 dark:bg-slate-500 text-center text-[14px] leading-[25px] text-gray-700 dark:text-gray-400"
+                            "w-[180px] cursor-pointer rounded-[35px]   text-center text-[14px] leading-[25px]  font-semibold shadow-md hover:from-purple-500 hover:to-blue-500 bg-gradient-to-r from-purple-700 to-blue-700 text-white"
                         }
                     >
                         Log out

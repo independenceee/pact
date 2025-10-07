@@ -1,5 +1,5 @@
 import "./globals.css";
-import { auth } from "~/libs/auth";
+import { auth } from "~/options/auth.option";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Layout from "~/components/layout";
