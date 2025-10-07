@@ -1,6 +1,5 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
-import Image from "next/image";
 import { useParams } from "next/navigation";
 import Pagination from "~/components/pagination";
 import Status from "~/components/status";
@@ -10,19 +9,20 @@ import { getProposalByID } from "~/services/proposal.service";
 export default function Page() {
     const params = useParams();
 
-    const { data, isLoading, isError } = useQuery({
+    const { data, isLoading } = useQuery({
         queryKey: ["proposal", params.id],
         queryFn: () => getProposalByID(params.id as string),
         enabled: !!params.id,
     });
 
     const proposal = data?.proposal;
-    console.log(proposal?.image);
+
+    
 
     return (
         <main className="font-sans bg-gray-900 snap-y snap-mandatory">
-            <div className="bg-gray-900 dark:bg-gray-900 py-8">
-                <div className="max-w-screen-xl mx-auto p-5 sm:p-10 md:p-16 flex flex-col gap-4">
+            <div className="bg-gray-900 dark:bg-gray-900 py-4 px-4">
+                <div className="max-w-screen-xl mx-auto  flex flex-col gap-4">
                     <Status />
                     {isLoading ? (
                         <div className="flex flex-col md:flex-row -mx-4 animate-pulse">

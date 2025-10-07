@@ -7,6 +7,7 @@ import Proposal, { ProposalSkeleton } from "~/components/proposal";
 import { getProposals } from "~/services/proposal.service";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import { router } from "~/constants/router.constant";
 
 export default function Page() {
     const [page, setPage] = useState(1);
@@ -64,14 +65,6 @@ export default function Page() {
                 {isLoading && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10 py-10">
                         {[...Array(9)].map((_, index) => (
-                            // <div
-                            //     key={i}
-                            //     className="animate-pulse bg-gray-800/60 rounded-xl h-64 shadow-lg flex flex-col justify-center items-center"
-                            // >
-                            //     <div className="w-24 h-24 bg-gray-700 rounded-full mb-4" />
-                            //     <div className="h-4 w-2/3 bg-gray-700 rounded mb-2" />
-                            //     <div className="h-3 w-1/2 bg-gray-700 rounded" />
-                            // </div>
                             <ProposalSkeleton key={index} />
                         ))}
                     </div>
@@ -91,6 +84,7 @@ export default function Page() {
                                 className="transition-all duration-200 hover:scale-[1.025] hover:shadow-2xl shadow-lg rounded-xl bg-gray-800/60"
                             >
                                 <Proposal
+                                    href={router.paction +"/"+ proposal.id}
                                     id={proposal.id}
                                     image={proposal.image}
                                     current={proposal.current}

@@ -10,6 +10,7 @@ type Props = {
     target: number;
     current: number;
     startTime: Date;
+    href: string;
 };
 
 export default function Proposal(proposal: Props) {
@@ -25,7 +26,7 @@ export default function Proposal(proposal: Props) {
         <article className="group relative rounded-xl overflow-hidden bg-gray-800/90 backdrop-blur-lg border border-gray-700/50 shadow-lg transition-all duration-300 h-full hover:shadow-2xl hover:shadow-purple-500/20 hover:-translate-y-1 max-w-sm mx-auto flex flex-col">
             {/* Image Section */}
             <div className="relative">
-                <Link href={`/paction/${proposal.id}`} aria-label={`View details for ${proposal.title}`}>
+                <Link href={proposal.href} aria-label={`View details for ${proposal.title}`}>
                     <img src={proposal.image} alt={proposal.title} className="object-cover" />
                     <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </Link>
@@ -45,7 +46,7 @@ export default function Proposal(proposal: Props) {
             {/* Content Section */}
             <div className="p-5 flex flex-col flex-1">
                 <div className="flex-1">
-                    <Link href={`/paction/${proposal.id}`}>
+                    <Link href={proposal.href}>
                         <h3 className="text-lg font-semibold text-white group-hover:text-purple-400 transition-colors duration-300 line-clamp-2">
                             {proposal.title}
                         </h3>

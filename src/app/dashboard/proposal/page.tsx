@@ -1,16 +1,40 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import Pagination from "~/components/pagination";
-import Proposal from "~/components/proposal";
+import Proposal, { ProposalSkeleton } from "~/components/proposal";
 import { router } from "~/constants/router.constant";
+import { useWallet } from "~/hooks/use-wallet";
+import { getProposals } from "~/services/proposal.service";
 
 const filters = ["All", "Active", "Completed", "Popular"] as const;
 
 export default function Page() {
+    const { address } = useWallet();
+    const [page, setPage] = useState(1);
+    const [search, setSearch] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
 
-    
+    useEffect(() => {
+        const timeout = setTimeout(() => setDebouncedSearch(search), 500);
+        return () => clearTimeout(timeout);
+    }, [search]);
+
+    const { data, isLoading, isError } = useQuery({
+        queryKey: ["proposals", { page, search, address }],
+        queryFn: () =>
+            getProposals({
+                page: page,
+                pageSize: 12,
+                search: search,
+                walletAddress: address as string,
+            }),
+
+        enabled: !!address,
+    });
     return (
         <motion.div
             className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 py-8 px-4 sm:px-6 lg:px-8 relative"
@@ -76,144 +100,80 @@ export default function Page() {
                     ))}
                 </motion.div>
 
-                {/* Projects Grid */}
-                <motion.div
-                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-8"
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.4 }}
-                >
-                    {proposals.map((proposal, index) => (
-                        <motion.div
-                            key={proposal.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 + 0.5 }}
-                        >
-                            <Proposal
-                                id={proposal.id}
-                                image={proposal.image}
-                                current={proposal.current}
-                                description={proposal.description}
-                                startTime={proposal.startTime}
-                                status={proposal.status}
-                                target={proposal.target}
-                                title={proposal.title}
-                            />
-                        </motion.div>
-                    ))}
-                </motion.div>
+                {isLoading && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10 py-10">
+                        {[...Array(9)].map((_, index) => (
+                            <ProposalSkeleton key={index} />
+                        ))}
+                    </div>
+                )}
 
-                {/* Pagination */}
-                <motion.div
-                    className="flex justify-center mt-12"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.6 }}
-                >
-                    <Pagination currentPage={1} setCurrentPage={null!} totalPages={10} />
-                </motion.div>
+                {isError && (
+                    <div className="flex justify-center py-10 text-red-400 text-lg font-semibold bg-red-900/20 rounded-xl shadow-md">
+                        Failed to fetch proposals. Please try again.
+                    </div>
+                )}
+
+                {!isLoading && (data?.proposals?.length ?? 0) > 0 && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
+                        {(data?.proposals ?? []).map((proposal: any) => (
+                            <div
+                                key={proposal.id}
+                                className="transition-all duration-200 hover:scale-[1.025] hover:shadow-2xl shadow-lg rounded-xl bg-gray-800/60"
+                            >
+                                <Proposal
+                                    href={router.proposal + "/" + proposal.id}
+                                    id={proposal.id}
+                                    image={proposal.image}
+                                    current={proposal.current}
+                                    description={proposal.description}
+                                    startTime={proposal.startTime}
+                                    status={proposal.status}
+                                    target={proposal.target}
+                                    title={proposal.title}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {!isLoading && !data?.proposals?.length && (
+                    <div className="flex flex-col items-center justify-center py-20 px-4 text-gray-300">
+                        <div className="relative flex flex-col items-center justify-center  p-4 ">
+                            <svg
+                                className="w-16 h-16 mb-4 text-purple-400 animate-pulse"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M9 17v-2a4 4 0 014-4h3m4 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                                />
+                            </svg>
+
+                            <h3 className="text-xl font-semibold text-white mb-2">No Proposals Available</h3>
+
+                            <p className="text-sm text-gray-400 text-center max-w-md">
+                                It looks like there are no proposals at the moment. Check back later or create a new
+                                proposal to get started!
+                            </p>
+
+                            <Link
+                                href="/create-proposal"
+                                className="mt-6 inline-block bg-gradient-to-r from-purple-500 to-blue-500 text-white font-medium py-2 px-6 rounded-full hover:from-purple-600 hover:to-blue-600 transition-all duration-300"
+                            >
+                                Create a Proposal
+                            </Link>
+                        </div>
+                    </div>
+                )}
+                {data?.totalPages && data.totalPages > 1 && (
+                    <Pagination currentPage={page} setCurrentPage={setPage} totalPages={data.totalPages} />
+                )}
             </div>
         </motion.div>
     );
 }
-
-const proposals = [
-    {
-        id: "clxyz1234567890abcdef123456",
-        title: "Best View in New York City",
-        image: "https://images.pexels.com/photos/196667/pexels-photo-196667.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-        description: "Support our fundraiser for urban conservation.",
-        status: "OPEN",
-        destination: "0xCommunityWallet1234567890abcdef1234567890",
-        target: 1000,
-        current: 200,
-        participants: 2,
-        startTime: new Date("2025-03-27T00:00:00Z"),
-        endTime: new Date("2025-05-27T00:00:00Z"),
-        createdAt: new Date("2025-03-01T12:00:00Z"),
-        updatedAt: new Date("2025-03-01T12:00:00Z"),
-        userId: "user_id_1",
-    },
-    {
-        id: "clxyz0987654321abcdef123456",
-        title: "Best Pizza in Town",
-        image: "https://images.pexels.com/photos/257816/pexels-photo-257816.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-        description: "Fundraiser for local food banks with pizza events.",
-        status: "OPEN",
-        destination: "0xFoodWalletabcdef1234567890abcdef12345678",
-        target: 500,
-        current: 100,
-        participants: 1,
-        startTime: new Date("2025-03-20T00:00:00Z"),
-        endTime: new Date("2025-04-20T00:00:00Z"),
-        createdAt: new Date("2025-03-01T12:00:00Z"),
-        updatedAt: new Date("2025-03-01T12:00:00Z"),
-        userId: "user_id_2",
-    },
-    {
-        id: "clxyz4567891230abcdef123456",
-        title: "Best Salad Images Ever",
-        image: "https://images.pexels.com/photos/196667/pexels-photo-196667.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-        description: "Support healthy eating initiatives with our fundraiser.",
-        status: "OPEN",
-        destination: "0xHealthWallet1234567890abcdef1234567890",
-        target: 800,
-        current: 300,
-        participants: 3,
-        startTime: new Date("2025-04-15T00:00:00Z"),
-        endTime: new Date("2025-06-15T00:00:00Z"),
-        createdAt: new Date("2025-03-01T12:00:00Z"),
-        updatedAt: new Date("2025-03-01T12:00:00Z"),
-        userId: "user_id_1",
-    },
-
-    {
-        id: "clxyz1234567890abcdef123456",
-        title: "Best View in New York City",
-        image: "https://images.pexels.com/photos/196667/pexels-photo-196667.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-        description: "Support our fundraiser for urban conservation.",
-        status: "OPEN",
-        destination: "0xCommunityWallet1234567890abcdef1234567890",
-        target: 1000,
-        current: 200,
-        participants: 2,
-        startTime: new Date("2025-03-27T00:00:00Z"),
-        endTime: new Date("2025-05-27T00:00:00Z"),
-        createdAt: new Date("2025-03-01T12:00:00Z"),
-        updatedAt: new Date("2025-03-01T12:00:00Z"),
-        userId: "user_id_1",
-    },
-    {
-        id: "clxyz0987654321abcdef123456",
-        title: "Best Pizza in Town",
-        image: "https://images.pexels.com/photos/257816/pexels-photo-257816.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-        description: "Fundraiser for local food banks with pizza events.",
-        status: "OPEN",
-        destination: "0xFoodWalletabcdef1234567890abcdef12345678",
-        target: 500,
-        current: 100,
-        participants: 1,
-        startTime: new Date("2025-03-20T00:00:00Z"),
-        endTime: new Date("2025-04-20T00:00:00Z"),
-        createdAt: new Date("2025-03-01T12:00:00Z"),
-        updatedAt: new Date("2025-03-01T12:00:00Z"),
-        userId: "user_id_2",
-    },
-    {
-        id: "clxyz4567891230abcdef123456",
-        title: "Best Salad Images Ever",
-        image: "https://images.pexels.com/photos/196667/pexels-photo-196667.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-        description: "Support healthy eating initiatives with our fundraiser.",
-        status: "OPEN",
-        destination: "0xHealthWallet1234567890abcdef1234567890",
-        target: 800,
-        current: 300,
-        participants: 3,
-        startTime: new Date("2025-04-15T00:00:00Z"),
-        endTime: new Date("2025-06-15T00:00:00Z"),
-        createdAt: new Date("2025-03-01T12:00:00Z"),
-        updatedAt: new Date("2025-03-01T12:00:00Z"),
-        userId: "user_id_1",
-    },
-];
