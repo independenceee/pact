@@ -5,6 +5,7 @@ import { HydraProvider } from "@meshsdk/hydra";
 import { isNil } from "lodash";
 import { HeadStatus } from "~/constants/common.constant";
 import {
+    APP_MNEMONIC,
     APP_NETWORK_ID,
     HYDRA_HTTP_URL,
     HYDRA_HTTP_URL_SUB,
@@ -294,5 +295,66 @@ export const getUTxOsFromHydra = async function ({
         return utxos;
     } catch (error) {
         return [];
+    }
+};
+
+/**
+ * @description
+ * Perform Hydra fanout, distributing finalized off-chain funds
+ * back to layer-1 (Cardano mainnet/testnet).
+ *
+ * Flow:
+ * 1. Connect to Hydra provider.
+ * 2. Trigger Hydra `fanout` process.
+ * 3. Listen for status changes.
+ * 4. Resolve when status becomes `"FANOUT_POSSIBLE"`.
+ *
+ * @returns {Promise<void>}
+ *          Resolves when fanout is possible.
+ *
+ * @throws {Error}
+ *         Throws if fanout request fails.
+ */
+export const fanout = async function ({ status, isCreator = false }: { status: string; isCreator: boolean }) {
+    try {
+        const meshWallet = new MeshWallet({
+            networkId: APP_NETWORK_ID,
+            fetcher: blockfrostProvider,
+            submitter: blockfrostProvider,
+            key: {
+                type: "mnemonic",
+                words: APP_MNEMONIC?.split(" ") || [],
+            },
+        });
+
+        const hydraProvider = new HydraProvider({
+            httpUrl: isCreator ? HYDRA_HTTP_URL : HYDRA_HTTP_URL_SUB,
+            wsUrl: isCreator ? HYDRA_WS_URL : HYDRA_WS_URL_SUB,
+        });
+
+        const hydraTxBuilder: HydraTxBuilder = new HydraTxBuilder({
+            meshWallet: meshWallet,
+            hydraProvider: hydraProvider,
+        });
+
+        await hydraProvider.connect();
+        switch (status) {
+            case HeadStatus.OPEN:
+                await hydraProvider.close();
+                await hydraTxBuilder.fanout();
+                await hydraTxBuilder.final();
+                break;
+            case HeadStatus.CLOSED:
+                await hydraTxBuilder.fanout();
+                await hydraTxBuilder.final();
+                break;
+            case HeadStatus.FANOUT_POSSIBLE:
+                await hydraTxBuilder.final();
+                break;
+            default:
+                break;
+        }
+    } catch (error) {
+        throw new Error(String(error));
     }
 };

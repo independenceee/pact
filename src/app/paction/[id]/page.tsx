@@ -16,8 +16,10 @@ import { shortenString } from "~/libs/utils";
 import { commit, getUTxOsFromHydra } from "~/services/hydra.service";
 import { getUTxOOnlyLovelace, submitTx } from "~/services/mesh.service";
 import { getProposalByID } from "~/services/proposal.service";
-import { CommitSchema } from "~/utils/schema";
+import { CommitSchema, ContributeSchema } from "~/utils/schema";
+
 type CommitFormType = z.infer<typeof CommitSchema>;
+type ContributeSchemaType = z.infer<typeof ContributeSchema>;
 
 export default function Page() {
     const params = useParams();
@@ -62,6 +64,15 @@ export default function Page() {
         defaultValues: { selectedUtxo: "" },
     });
 
+    const {
+        register: contributeRegister,
+        handleSubmit: contributeHandleSubmit,
+        formState: { errors: contributeErrors },
+    } = useForm<ContributeSchemaType>({
+        resolver: zodResolver(ContributeSchema),
+        defaultValues: { amount: 0 },
+    });
+
     const onSubmit = async (data: CommitFormType) => {
         try {
             setIsSubmitting(true);
@@ -80,6 +91,16 @@ export default function Page() {
             toast.success("Commit Funds UTxO successfully!");
         } catch (error) {
             toast.error(String(error));
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const onContribute = async (data: ContributeSchemaType) => {
+        try {
+            setIsSubmitting(true);
+        } catch (error) {
+            toast.error("Contribute fund with value fails");
         } finally {
             setIsSubmitting(false);
         }
@@ -185,23 +206,31 @@ export default function Page() {
                                         </div>
                                     </div>
                                 </div>
-                                {/* <div className="flex -mx-2 mb-4">
+                                <form className="flex -mx-2 mb-4" onScroll={contributeHandleSubmit(onContribute)}>
                                     <div className="w-1/2 px-2">
-                                        <button className="w-full bg-purple-600/80 dark:bg-purple-600/80 text-white py-2 px-4 rounded-full font-bold hover:bg-gray-700/90 dark:hover:bg-gray-700/90">
-                                            Add to Cart
-                                        </button>
+                                        <input
+                                            type="number"
+                                            {...contributeRegister("amount", { valueAsNumber: true })}
+                                            className={`w-full bg-gray-800/80 dark:bg-gray-800/80 text-gray-300 dark:text-gray-300 py-2 px-4 rounded-full focus:outline-none focus:ring-2 ${
+                                                contributeErrors.amount ? "focus:ring-red-500" : "focus:ring-purple-600"
+                                            }`}
+                                            placeholder="Nhập số..."
+                                        />
                                     </div>
                                     <div className="w-1/2 px-2">
-                                        <button className="w-full bg-gray-800/80 dark:bg-gray-800/80 text-gray-300 dark:text-gray-300 py-2 px-4 rounded-full font-bold hover:bg-gray-700/90 dark:hover:bg-gray-700/90">
-                                            Add to Wishlist
+                                        <button
+                                            type="submit"
+                                            className="w-full bg-purple-600/80 dark:bg-purple-600/80 text-white py-2 px-4 rounded-full font-bold hover:bg-gray-700/90 dark:hover:bg-gray-700/90"
+                                        >
+                                            Submit
                                         </button>
                                     </div>
-                                </div> */}
+                                </form>
                                 <form onSubmit={handleSubmit(onSubmit)} className="flex items-center gap-2 w-full mb-2">
                                     <div className="w-2/3  relative">
                                         <select
                                             {...register("selectedUtxo")}
-                                            className={`w-full appearance-none bg-gray-800/90 text-gray-200 py-3 px-5 pr-12 rounded-full font-medium text-sm border ${
+                                            className={`w-full appearance-none bg-gray-800/90 text-gray-200 py-2 px-5 pr-12 rounded-full font-medium text-sm border ${
                                                 errors.selectedUtxo
                                                     ? "border-red-500 focus:ring-red-500"
                                                     : "border-gray-700/50 focus:ring-purple-500"
@@ -279,6 +308,9 @@ export default function Page() {
                                 </form>
                                 {errors.selectedUtxo && (
                                     <p className="text-red-400 text-sm mt-2">{errors.selectedUtxo.message}</p>
+                                )}
+                                {contributeErrors.amount && (
+                                    <p className="text-red-500 text-sm mt-1">{contributeErrors.amount.message}</p>
                                 )}
                                 <div>
                                     <span className="font-bold text-gray-300 dark:text-gray-300">

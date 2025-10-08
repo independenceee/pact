@@ -18,3 +18,7 @@ export const CommitSchema = z.object({
         }
     }, "Please select a valid ADA amount"),
 });
+
+export const ContributeSchema = z.object({
+    amount: z.number({ message: "Vui lòng nhập một số hợp lệ" }).min(0, { message: "Số phải lớn hơn hoặc bằng 0" }),
+});
