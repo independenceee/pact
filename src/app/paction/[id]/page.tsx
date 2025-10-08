@@ -1,23 +1,89 @@
 "use client";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
-import Image from "next/image";
+import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import z from "zod";
 import Pagination from "~/components/pagination";
 import Status from "~/components/status";
+import { DECIMAL_PLACE } from "~/constants/common.constant";
+import { useHydra } from "~/hooks/use-hydra";
+import { useWallet } from "~/hooks/use-wallet";
 import { shortenString } from "~/libs/utils";
+import { commit, getUTxOsFromHydra } from "~/services/hydra.service";
+import { getUTxOOnlyLovelace, submitTx } from "~/services/mesh.service";
 import { getProposalByID } from "~/services/proposal.service";
+import { CommitSchema } from "~/utils/schema";
+type CommitFormType = z.infer<typeof CommitSchema>;
 
 export default function Page() {
     const params = useParams();
+    const { address, signTx } = useWallet();
+    const { status: headStatus } = useHydra();
+    const { status: sessionStatus } = useSession();
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const { data, isLoading, isError } = useQuery({
-        queryKey: ["proposal", params.id],
+        queryKey: ["data?.proposal", params.id],
         queryFn: () => getProposalByID(params.id as string),
         enabled: !!params.id,
     });
 
-    const proposal = data?.proposal;
-    console.log(proposal?.image);
+    const { data: utxosLovelaceOnly, isLoading: isLoadingUtxosLovelaceOnly } = useQuery({
+        queryKey: ["utxos", address],
+        queryFn: () =>
+            getUTxOOnlyLovelace({
+                walletAddress: address as string,
+                quantity: (Number(data?.proposal?.target) * DECIMAL_PLACE) / Number(data?.proposal?.participants),
+            }),
+        enabled: !!address && sessionStatus === "authenticated" && !!data,
+    });
+
+    const { data: utxosHydra, isLoading: isLoadingUTxOsHydra } = useQuery({
+        queryKey: ["utxos", address],
+        queryFn: () =>
+            getUTxOsFromHydra({
+                walletAddress: address as string,
+            }),
+        enabled: !!address && sessionStatus === "authenticated" && !!data,
+    });
+
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+        reset,
+    } = useForm<CommitFormType>({
+        resolver: zodResolver(CommitSchema),
+        defaultValues: { selectedUtxo: "" },
+    });
+
+    const onSubmit = async (data: CommitFormType) => {
+        try {
+            setIsSubmitting(true);
+            const parsed = JSON.parse(data.selectedUtxo);
+            const unsignedTxCommit = await commit({
+                walletAddress: address as string,
+                isCreator: false,
+                input: {
+                    outputIndex: parsed.outputIndex as number,
+                    txHash: parsed.txHash as string,
+                },
+                status: headStatus,
+            });
+            const signedTxCommit = await signTx(unsignedTxCommit);
+            await submitTx({ signedTx: signedTxCommit });
+            toast.success("Commit Funds UTxO successfully!");
+        } catch (error) {
+            toast.error(String(error));
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     return (
         <main className="font-sans bg-gray-900 snap-y snap-mandatory">
@@ -59,20 +125,20 @@ export default function Page() {
                                 </div>
                             </div>
                         </div>
-                    ) : proposal ? (
+                    ) : data?.proposal ? (
                         <div className="flex flex-col md:flex-row -mx-4 h-full">
                             <div className="md:flex-1 px-4 h-full">
                                 <div className="rounded-lg h-full bg-gray-800/80 dark:bg-gray-800/80 mb-4">
                                     <img
                                         className="w-full h-full object-cover rounded"
-                                        src={proposal.image}
-                                        alt={proposal.title}
+                                        src={data?.proposal.image}
+                                        alt={data?.proposal.title}
                                     />
                                 </div>
                             </div>
                             <div className="md:flex-1 px-4">
                                 <h2 className="text-2xl font-bold text-white dark:text-white mb-2 hover:text-purple-400">
-                                    {proposal.title}
+                                    {data?.proposal.title}
                                 </h2>
                                 <div className="mb-4">
                                     <div className="flex mt-2 flex-col">
@@ -82,16 +148,19 @@ export default function Page() {
                                                 style={{
                                                     width: `${Math.min(
                                                         100,
-                                                        (proposal.current / proposal.target) * 100,
+                                                        (data?.proposal.current / data?.proposal.target) * 100,
                                                     ).toFixed(0)}%`,
                                                 }}
                                             ></div>
                                         </div>
                                         <p className="text-gray-400 text-xs mt-2">
                                             Funded:{" "}
-                                            {Math.min(100, (proposal.current / proposal.target) * 100).toFixed(0)}% ---
-                                            Participants: {proposal.participants} --- Required: {proposal.target} ADA /
-                                            Participant
+                                            {Math.min(
+                                                100,
+                                                (data?.proposal.current / data?.proposal.target) * 100,
+                                            ).toFixed(0)}
+                                            % --- Participants: {data?.proposal.participants} --- Required:{" "}
+                                            {data?.proposal.target} ADA / Participant
                                         </p>
                                     </div>
                                 </div>
@@ -108,15 +177,15 @@ export default function Page() {
                                         </div>
                                         <div className="ml-4">
                                             <h2 className="font-bold text-white dark:text-white text-lg hover:text-purple-400">
-                                                {shortenString(proposal.destination) || "Jane Doe"}
+                                                {shortenString(data?.proposal.destination) || "Jane Doe"}
                                             </h2>
                                             <p className="text-gray-300 dark:text-gray-300">
-                                                Balance: {proposal.current || 0}
+                                                Balance: {data?.proposal.current || 0}
                                             </p>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="flex -mx-2 mb-4">
+                                {/* <div className="flex -mx-2 mb-4">
                                     <div className="w-1/2 px-2">
                                         <button className="w-full bg-purple-600/80 dark:bg-purple-600/80 text-white py-2 px-4 rounded-full font-bold hover:bg-gray-700/90 dark:hover:bg-gray-700/90">
                                             Add to Cart
@@ -127,19 +196,102 @@ export default function Page() {
                                             Add to Wishlist
                                         </button>
                                     </div>
-                                </div>
+                                </div> */}
+                                <form onSubmit={handleSubmit(onSubmit)} className="flex items-center gap-2 w-full mb-2">
+                                    <div className="w-2/3  relative">
+                                        <select
+                                            {...register("selectedUtxo")}
+                                            className={`w-full appearance-none bg-gray-800/90 text-gray-200 py-3 px-5 pr-12 rounded-full font-medium text-sm border ${
+                                                errors.selectedUtxo
+                                                    ? "border-red-500 focus:ring-red-500"
+                                                    : "border-gray-700/50 focus:ring-purple-500"
+                                            } focus:outline-none transition-all duration-300 cursor-pointer shadow-sm`}
+                                            aria-label="Select ADA amount to commit"
+                                            disabled={isLoadingUtxosLovelaceOnly}
+                                        >
+                                            <option value="">
+                                                {isLoadingUtxosLovelaceOnly ? "Loading ..." : "Select ADA Amount"}
+                                            </option>
+                                            {utxosLovelaceOnly?.map((utxo, index: number) => (
+                                                <option key={index} value={JSON.stringify(utxo)}>
+                                                    {(utxo.amount / DECIMAL_PLACE).toFixed(2)} ADA
+                                                </option>
+                                            ))}
+                                        </select>
+
+                                        <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
+                                            <svg
+                                                className="w-4 h-4 text-gray-400"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M19 9l-7 7-7-7"
+                                                />
+                                            </svg>
+                                        </div>
+                                    </div>
+
+                                    <div className="w-1/3 px-2">
+                                        <button
+                                            type="submit"
+                                            className={`w-full bg-purple-600/80 text-white py-3 px-4 rounded-full font-bold hover:bg-purple-700/90 transition-all flex items-center justify-center gap-2 ${
+                                                isSubmitting ? "opacity-70 cursor-not-allowed" : ""
+                                            }`}
+                                            disabled={isSubmitting}
+                                            aria-disabled={isSubmitting}
+                                            aria-label={isSubmitting ? "Submitting transaction" : "Commit funds"}
+                                        >
+                                            {isSubmitting ? (
+                                                <>
+                                                    <svg
+                                                        className="animate-spin h-5 w-5 text-white"
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <circle
+                                                            className="opacity-25"
+                                                            cx="12"
+                                                            cy="12"
+                                                            r="10"
+                                                            stroke="currentColor"
+                                                            strokeWidth="4"
+                                                        ></circle>
+                                                        <path
+                                                            className="opacity-75"
+                                                            fill="currentColor"
+                                                            d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8 8 8 0 01-8-8z"
+                                                        ></path>
+                                                    </svg>
+                                                    Submitting...
+                                                </>
+                                            ) : (
+                                                "Commit"
+                                            )}
+                                        </button>
+                                    </div>
+                                </form>
+                                {errors.selectedUtxo && (
+                                    <p className="text-red-400 text-sm mt-2">{errors.selectedUtxo.message}</p>
+                                )}
                                 <div>
                                     <span className="font-bold text-gray-300 dark:text-gray-300">
                                         Product Description:
                                     </span>
                                     <p className="text-gray-300 dark:text-gray-300 text-sm mt-2">
-                                        {proposal.description}
+                                        {data?.proposal.description}
                                     </p>
                                 </div>
                             </div>
                         </div>
                     ) : (
-                        <div className="text-center text-gray-400 py-20 text-lg">Proposal not found.</div>
+                        <div className="text-center text-gray-400 py-20 text-lg">data?.proposal not found.</div>
                     )}
 
                     <section className="space-y-4">
@@ -176,8 +328,8 @@ export default function Page() {
                                                 </td>
                                             </tr>
                                         ))
-                                    ) : proposal?.transactions?.length ? (
-                                        proposal.transactions.map((tx: any, i: number) => (
+                                    ) : data?.proposal?.transactions?.length ? (
+                                        data?.proposal.transactions.map((tx: any, i: number) => (
                                             <tr
                                                 key={i}
                                                 className="border-b border-gray-700/50 hover:bg-purple-500/5 transition-colors"
@@ -208,7 +360,7 @@ export default function Page() {
                                 </tbody>
                             </table>
                         </div>
-                        {proposal?.transactions && proposal.transactions.length > 0 && (
+                        {data?.proposal?.transactions && data?.proposal.transactions.length > 0 && (
                             <div className="flex justify-center mt-6">
                                 <Pagination currentPage={1} setCurrentPage={null!} totalPages={2} />
                             </div>
