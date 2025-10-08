@@ -26,12 +26,12 @@ export class HydraTxBuilder extends HydraAdapter {
      */
     contribute = async ({
         destination,
-        required = 1_000,
-        quantity = 1_000,
+        required,
+        quantity,
     }: {
-        destination?: string;
-        required?: number;
-        quantity?: number;
+        destination: string;
+        required: number;
+        quantity: number;
     }) => {
         await this.hydraProvider.connect();
         const { utxos, collateral, walletAddress } = await this.getWalletForHydraTx();
@@ -42,6 +42,7 @@ export class HydraTxBuilder extends HydraAdapter {
             utxos: utxos,
             quantity: quantity * DECIMAL_PLACE,
         });
+        console.log(utxoContract);
         const unsignedTx = this.meshTxBuilder;
         if (utxoContract) {
             const datum = this.convertDatum({
@@ -171,10 +172,6 @@ export class HydraTxBuilder extends HydraAdapter {
      *
      * @throws {Error} - Throws if UTxOs are insufficient, collateral is missing,
      * or contract UTxOs cannot be retrieved.
-     *
-     * @example
-     * const tx = await hydraTxBuilder.unLock();
-     * // Sign and submit transaction...
      */
     disburse = async () => {
         await this.hydraProvider.connect();

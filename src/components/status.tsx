@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { ClipLoader } from "react-spinners";
@@ -56,6 +56,11 @@ const Status: React.FC = () => {
         }
     }, [queryClient, router]);
 
+    useEffect(() => {
+        if (status === HeadStatus.CLOSED) {
+            handleFanout();
+        }
+    }, [status, handleFanout]);
     return (
         <motion.div
             className="relative flex w-full items-center gap-4 rounded-lg border-l-4 border-purple-500 bg-gradient-to-r  p-4 shadow-md dark:border-purple-600 from-purple-900/20 to-gray-900"
@@ -98,7 +103,7 @@ const Status: React.FC = () => {
                         <ClipLoader color="#9333ea" size={14} />
                     ) : (
                         <span className="rounded-md bg-purple-100 px-2 py-1 dark:bg-purple-800/50">
-                            {status || HeadStatus.IDLE}
+                            {status || "Loading ..."}
                         </span>
                     )}
                 </motion.div>

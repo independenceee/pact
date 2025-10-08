@@ -9,11 +9,11 @@ import { toast } from "sonner";
 import z from "zod";
 import Pagination from "~/components/pagination";
 import Status from "~/components/status";
-import { DECIMAL_PLACE } from "~/constants/common.constant";
+import { DECIMAL_PLACE, HeadStatus } from "~/constants/common.constant";
 import { useHydra } from "~/hooks/use-hydra";
 import { useWallet } from "~/hooks/use-wallet";
 import { shortenString } from "~/libs/utils";
-import { commit, getUTxOsFromHydra } from "~/services/hydra.service";
+import { commit, contribute, getUTxOsFromHydra, submitHydraTx } from "~/services/hydra.service";
 import { getUTxOOnlyLovelace, submitTx } from "~/services/mesh.service";
 import { getProposalByID } from "~/services/proposal.service";
 import { CommitSchema, ContributeSchema } from "~/utils/schema";
@@ -30,7 +30,7 @@ export default function Page() {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const { data, isLoading, isError } = useQuery({
-        queryKey: ["data?.proposal", params.id],
+        queryKey: ["proposal", params.id],
         queryFn: () => getProposalByID(params.id as string),
         enabled: !!params.id,
     });
@@ -68,6 +68,7 @@ export default function Page() {
         register: contributeRegister,
         handleSubmit: contributeHandleSubmit,
         formState: { errors: contributeErrors },
+        reset: contributeReset,
     } = useForm<ContributeSchemaType>({
         resolver: zodResolver(ContributeSchema),
         defaultValues: { amount: 0 },
@@ -96,9 +97,21 @@ export default function Page() {
         }
     };
 
-    const onContribute = async (data: ContributeSchemaType) => {
+    const onContribute = async ({ amount }: ContributeSchemaType) => {
         try {
             setIsSubmitting(true);
+            const unsignedTx = await contribute({
+                walletAddress: address as string,
+                isCreator: true,
+                quantity: amount,
+                destination: data?.proposal?.destination as string,
+                required: data?.proposal?.target as number,
+            });
+            console.log(unsignedTx);
+            const signedTx = await signTx(unsignedTx as string);
+            await submitHydraTx({ signedTx: signedTx, isCreator: true });
+            toast.success("Contribute completed successfully");
+            contributeReset();
         } catch (error) {
             toast.error("Contribute fund with value fails");
         } finally {
@@ -206,106 +219,163 @@ export default function Page() {
                                         </div>
                                     </div>
                                 </div>
-                                <form className="flex -mx-2 mb-4" onScroll={contributeHandleSubmit(onContribute)}>
-                                    <div className="w-1/2 px-2">
-                                        <input
-                                            type="number"
-                                            {...contributeRegister("amount", { valueAsNumber: true })}
-                                            className={`w-full bg-gray-800/80 dark:bg-gray-800/80 text-gray-300 dark:text-gray-300 py-2 px-4 rounded-full focus:outline-none focus:ring-2 ${
-                                                contributeErrors.amount ? "focus:ring-red-500" : "focus:ring-purple-600"
-                                            }`}
-                                            placeholder="Nhập số..."
-                                        />
-                                    </div>
-                                    <div className="w-1/2 px-2">
-                                        <button
-                                            type="submit"
-                                            className="w-full bg-purple-600/80 dark:bg-purple-600/80 text-white py-2 px-4 rounded-full font-bold hover:bg-gray-700/90 dark:hover:bg-gray-700/90"
-                                        >
-                                            Submit
-                                        </button>
-                                    </div>
-                                </form>
-                                <form onSubmit={handleSubmit(onSubmit)} className="flex items-center gap-2 w-full mb-2">
-                                    <div className="w-2/3  relative">
-                                        <select
-                                            {...register("selectedUtxo")}
-                                            className={`w-full appearance-none bg-gray-800/90 text-gray-200 py-2 px-5 pr-12 rounded-full font-medium text-sm border ${
-                                                errors.selectedUtxo
-                                                    ? "border-red-500 focus:ring-red-500"
-                                                    : "border-gray-700/50 focus:ring-purple-500"
-                                            } focus:outline-none transition-all duration-300 cursor-pointer shadow-sm`}
-                                            aria-label="Select ADA amount to commit"
-                                            disabled={isLoadingUtxosLovelaceOnly}
-                                        >
-                                            <option value="">
-                                                {isLoadingUtxosLovelaceOnly ? "Loading ..." : "Select ADA Amount"}
-                                            </option>
-                                            {utxosLovelaceOnly?.map((utxo, index: number) => (
-                                                <option key={index} value={JSON.stringify(utxo)}>
-                                                    {(utxo.amount / DECIMAL_PLACE).toFixed(2)} ADA
-                                                </option>
-                                            ))}
-                                        </select>
 
-                                        <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
-                                            <svg
-                                                className="w-4 h-4 text-gray-400"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                                xmlns="http://www.w3.org/2000/svg"
+                                {headStatus === HeadStatus.OPEN && (
+                                    <form
+                                        className="flex -mx-2 mb-4 items-end"
+                                        onSubmit={contributeHandleSubmit(onContribute)}
+                                    >
+                                        <div className="w-2/3 px-2">
+                                            <label
+                                                htmlFor="amount"
+                                                className="block text-gray-300 dark:text-gray-300 text-sm font-bold mb-2"
                                             >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth="2"
-                                                    d="M19 9l-7 7-7-7"
-                                                />
-                                            </svg>
+                                                Enter the amount of ada contributed
+                                            </label>
+                                            <input
+                                                type="number"
+                                                {...contributeRegister("amount", { valueAsNumber: true })}
+                                                className={`w-full bg-gray-800/80 dark:bg-gray-800/80 text-gray-300 dark:text-gray-300 py-2 px-4 rounded-full focus:outline-none focus:ring-2 ${
+                                                    contributeErrors.amount
+                                                        ? "focus:ring-red-500"
+                                                        : "focus:ring-purple-600"
+                                                }`}
+                                                placeholder="Nhập số..."
+                                            />
                                         </div>
-                                    </div>
+                                        <div className="w-1/3 px-2">
+                                            <button
+                                                type="submit"
+                                                className={`w-full bg-purple-600/80 text-white py-2 px-4 rounded-full font-bold hover:bg-purple-700/90 transition-all flex items-center justify-center gap-2 ${
+                                                    isSubmitting ? "opacity-70 cursor-not-allowed" : ""
+                                                }`}
+                                                disabled={isSubmitting}
+                                                aria-disabled={isSubmitting}
+                                                aria-label={isSubmitting ? "Contributing transaction" : "Contribute"}
+                                            >
+                                                {isSubmitting ? (
+                                                    <>
+                                                        <svg
+                                                            className="animate-spin h-5 w-5 text-white"
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <circle
+                                                                className="opacity-25"
+                                                                cx="12"
+                                                                cy="12"
+                                                                r="10"
+                                                                stroke="currentColor"
+                                                                strokeWidth="4"
+                                                            ></circle>
+                                                            <path
+                                                                className="opacity-75"
+                                                                fill="currentColor"
+                                                                d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8 8 8 0 01-8-8z"
+                                                            ></path>
+                                                        </svg>
+                                                        Contributing...
+                                                    </>
+                                                ) : (
+                                                    "Commit"
+                                                )}
+                                            </button>
+                                        </div>
+                                    </form>
+                                )}
 
-                                    <div className="w-1/3 px-2">
-                                        <button
-                                            type="submit"
-                                            className={`w-full bg-purple-600/80 text-white py-3 px-4 rounded-full font-bold hover:bg-purple-700/90 transition-all flex items-center justify-center gap-2 ${
-                                                isSubmitting ? "opacity-70 cursor-not-allowed" : ""
-                                            }`}
-                                            disabled={isSubmitting}
-                                            aria-disabled={isSubmitting}
-                                            aria-label={isSubmitting ? "Submitting transaction" : "Commit funds"}
-                                        >
-                                            {isSubmitting ? (
-                                                <>
-                                                    <svg
-                                                        className="animate-spin h-5 w-5 text-white"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        fill="none"
-                                                        viewBox="0 0 24 24"
-                                                    >
-                                                        <circle
-                                                            className="opacity-25"
-                                                            cx="12"
-                                                            cy="12"
-                                                            r="10"
-                                                            stroke="currentColor"
-                                                            strokeWidth="4"
-                                                        ></circle>
-                                                        <path
-                                                            className="opacity-75"
-                                                            fill="currentColor"
-                                                            d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8 8 8 0 01-8-8z"
-                                                        ></path>
-                                                    </svg>
-                                                    Submitting...
-                                                </>
-                                            ) : (
-                                                "Commit"
-                                            )}
-                                        </button>
-                                    </div>
-                                </form>
+                                {headStatus === HeadStatus.INITIALIZING && (
+                                    <form
+                                        onSubmit={handleSubmit(onSubmit)}
+                                        className="flex items-end gap-2 w-full mb-2"
+                                    >
+                                        <div className="w-2/3  relative">
+                                            <label
+                                                htmlFor="amount"
+                                                className="block text-gray-300 dark:text-gray-300 text-sm font-bold mb-2"
+                                            >
+                                                Choose the amount of ada commit
+                                            </label>
+                                            <select
+                                                {...register("selectedUtxo")}
+                                                className={`w-full appearance-none bg-gray-800/90 text-gray-200 py-2 px-5 pr-12 rounded-full font-medium text-sm border ${
+                                                    errors.selectedUtxo
+                                                        ? "border-red-500 focus:ring-red-500"
+                                                        : "border-gray-700/50 focus:ring-purple-500"
+                                                } focus:outline-none transition-all duration-300 cursor-pointer shadow-sm`}
+                                                aria-label="Select ADA amount to commit"
+                                                disabled={isLoadingUtxosLovelaceOnly}
+                                            >
+                                                <option value="">
+                                                    {isLoadingUtxosLovelaceOnly ? "Loading ..." : "Select ADA Amount"}
+                                                </option>
+                                                {utxosLovelaceOnly?.map((utxo, index: number) => (
+                                                    <option key={index} value={JSON.stringify(utxo)}>
+                                                        {(utxo.amount / DECIMAL_PLACE).toFixed(2)} ADA
+                                                    </option>
+                                                ))}
+                                            </select>
+
+                                            <div className="absolute top-10 right-4 flex items-center pointer-events-none">
+                                                <svg
+                                                    className="w-4 h-4 text-gray-400"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth="2"
+                                                        d="M19 9l-7 7-7-7"
+                                                    />
+                                                </svg>
+                                            </div>
+                                        </div>
+
+                                        <div className="w-1/3 px-2">
+                                            <button
+                                                type="submit"
+                                                className={`w-full bg-purple-600/80 text-white py-2 px-4 rounded-full font-bold hover:bg-purple-700/90 transition-all flex items-center justify-center gap-2 ${
+                                                    isSubmitting ? "opacity-70 cursor-not-allowed" : ""
+                                                }`}
+                                                disabled={isSubmitting}
+                                                aria-disabled={isSubmitting}
+                                                aria-label={isSubmitting ? "Submitting transaction" : "Commit funds"}
+                                            >
+                                                {isSubmitting ? (
+                                                    <>
+                                                        <svg
+                                                            className="animate-spin h-5 w-5 text-white"
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <circle
+                                                                className="opacity-25"
+                                                                cx="12"
+                                                                cy="12"
+                                                                r="10"
+                                                                stroke="currentColor"
+                                                                strokeWidth="4"
+                                                            ></circle>
+                                                            <path
+                                                                className="opacity-75"
+                                                                fill="currentColor"
+                                                                d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8 8 8 0 01-8-8z"
+                                                            ></path>
+                                                        </svg>
+                                                        Submitting...
+                                                    </>
+                                                ) : (
+                                                    "Commit"
+                                                )}
+                                            </button>
+                                        </div>
+                                    </form>
+                                )}
                                 {errors.selectedUtxo && (
                                     <p className="text-red-400 text-sm mt-2">{errors.selectedUtxo.message}</p>
                                 )}
