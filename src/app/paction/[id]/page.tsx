@@ -74,7 +74,7 @@ export default function Page() {
         defaultValues: { amount: 0 },
     });
 
-    const onSubmit = async (data: CommitFormType) => {
+    const onCommit = async (data: CommitFormType) => {
         try {
             setIsSubmitting(true);
             const parsed = JSON.parse(data.selectedUtxo);
@@ -287,7 +287,7 @@ export default function Page() {
 
                                 {headStatus === HeadStatus.INITIALIZING && (
                                     <form
-                                        onSubmit={handleSubmit(onSubmit)}
+                                        onSubmit={handleSubmit(onCommit)}
                                         className="flex items-end gap-2 w-full mb-2"
                                     >
                                         <div className="w-2/3  relative">

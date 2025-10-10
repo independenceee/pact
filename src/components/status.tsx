@@ -44,7 +44,7 @@ const Status: React.FC = () => {
                 const signedTx = await signTx(unsignedTx as string);
                 await submitHydraTx({ signedTx: signedTx, isCreator: true });
             }
-            await fanout({ status: status, isCreator: true });
+            await fanout({ status: status, isCreator: false });
             toast.success("Fanout completed successfully");
 
             queryClient.invalidateQueries({ queryKey: ["headStatus"] });
@@ -61,6 +61,13 @@ const Status: React.FC = () => {
             handleFanout();
         }
     }, [status, handleFanout]);
+
+    // useEffect(() => {
+    //     if (status === HeadStatus.IDLE) {
+    //         handleFanout();
+    //     }
+    // }, [status, handleFanout]);
+
     return (
         <motion.div
             className="relative flex w-full items-center gap-4 rounded-lg border-l-4 border-purple-500 bg-gradient-to-r  p-4 shadow-md dark:border-purple-600 from-purple-900/20 to-gray-900"
