@@ -17,6 +17,9 @@ import { commit, contribute, getUTxOsFromHydra, submitHydraTx } from "~/services
 import { getUTxOOnlyLovelace, submitTx } from "~/services/mesh.service";
 import { getProposalByID } from "~/services/proposal.service";
 import { CommitSchema, ContributeSchema } from "~/utils/schema";
+import { motion } from "framer-motion";
+import CountUp from "react-countup";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 
 type CommitFormType = z.infer<typeof CommitSchema>;
 type ContributeSchemaType = z.infer<typeof ContributeSchema>;
@@ -90,6 +93,7 @@ export default function Page() {
             const signedTxCommit = await signTx(unsignedTxCommit);
             await submitTx({ signedTx: signedTxCommit });
             toast.success("Commit Funds UTxO successfully!");
+            reset();
         } catch (error) {
             toast.error(String(error));
         } finally {
@@ -107,7 +111,6 @@ export default function Page() {
                 destination: data?.proposal?.destination as string,
                 required: data?.proposal?.target as number,
             });
-            console.log(unsignedTx);
             const signedTx = await signTx(unsignedTx as string);
             await submitHydraTx({ signedTx: signedTx, isCreator: true });
             toast.success("Contribute completed successfully");
@@ -119,196 +122,216 @@ export default function Page() {
         }
     };
 
+    // Calculate user's contribution from transactions
+    const userContribution =
+        data?.proposal?.transactions
+            ?.filter((tx: any) => tx.wallet === address)
+            ?.reduce((sum: number, tx: any) => sum + Number(tx.amount), 0) || 0;
+
+    const handleWithdraw = async () => {
+        try {
+            toast.info("Withdraw functionality not implemented yet.");
+        } catch (error) {
+            toast.error("Failed to withdraw funds.");
+        }
+    };
+
     return (
-        <main className="font-sans bg-gray-900 snap-y snap-mandatory">
-            <div className="bg-gray-900 dark:bg-gray-900 py-8">
-                <div className="max-w-screen-xl mx-auto p-5 sm:p-10 md:p-16 flex flex-col gap-4">
-                    <Status />
-                    {isLoading ? (
-                        <div className="flex flex-col md:flex-row -mx-4 animate-pulse">
-                            <div className="md:flex-1 px-4">
-                                <div className="h-[460px] rounded-lg bg-gray-800/80 mb-4 flex items-center justify-center" />
-                            </div>
-                            <div className="md:flex-1 px-4 flex flex-col gap-4">
-                                <div className="h-8 w-3/4 bg-gray-700/60 rounded mb-2" />
-                                <div className="flex flex-col gap-2 mb-4">
-                                    <div className="w-full bg-gray-700 rounded-full h-2.5">
-                                        <div className="bg-gradient-to-r from-purple-400 to-blue-400 h-3 rounded-full w-1/2" />
-                                    </div>
-                                    <div className="h-4 w-1/2 bg-gray-700/60 rounded mt-2" />
-                                </div>
-                                <div className="mb-4 flex flex-col gap-2">
-                                    <div className="h-6 w-32 bg-gray-700/60 rounded mb-2" />
-                                    <div className="flex items-center gap-4">
-                                        <div className="h-16 w-16 rounded-full bg-gray-700/60" />
-                                        <div className="flex flex-col gap-2">
-                                            <div className="h-5 w-24 bg-gray-700/60 rounded" />
-                                            <div className="h-4 w-16 bg-gray-700/50 rounded" />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="flex gap-4 mb-4">
-                                    <div className="w-1/2 h-10 bg-gray-700/60 rounded-full" />
-                                    <div className="w-1/2 h-10 bg-gray-700/60 rounded-full" />
-                                </div>
-                                <div>
-                                    <div className="h-5 w-40 bg-gray-700/60 rounded mb-2" />
-                                    <div className="h-4 w-full bg-gray-700/50 rounded mb-1" />
-                                    <div className="h-4 w-5/6 bg-gray-700/50 rounded mb-1" />
-                                    <div className="h-4 w-2/3 bg-gray-700/50 rounded" />
-                                </div>
+        <main className="font-sans bg-gradient-to-b from-gray-900 to-gray-800 min-h-screen text-white">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                <Status />
+                {isLoading ? (
+                    <div className="animate-pulse space-y-6">
+                        <div className="flex flex-col md:flex-row gap-6">
+                            <div className="md:w-1/2 h-96 bg-gray-700/50 rounded-xl" />
+                            <div className="md:w-1/2 space-y-4">
+                                <div className="h-8 w-3/4 bg-gray-700/50 rounded" />
+                                <div className="h-4 w-full bg-gray-700/50 rounded" />
+                                <div className="h-4 w-5/6 bg-gray-700/50 rounded" />
+                                <div className="h-10 w-1/2 bg-gray-700/50 rounded-full" />
                             </div>
                         </div>
-                    ) : data?.proposal ? (
-                        <div className="flex flex-col md:flex-row -mx-4 h-full">
-                            <div className="md:flex-1 px-4 h-full">
-                                <div className="rounded-lg h-full bg-gray-800/80 dark:bg-gray-800/80 mb-4">
-                                    <img
-                                        className="w-full h-full object-cover rounded"
-                                        src={data?.proposal.image}
-                                        alt={data?.proposal.title}
-                                    />
-                                </div>
-                            </div>
-                            <div className="md:flex-1 px-4">
-                                <h2 className="text-2xl font-bold text-white dark:text-white mb-2 hover:text-purple-400">
-                                    {data?.proposal.title}
-                                </h2>
-                                <div className="mb-4">
-                                    <div className="flex mt-2 flex-col">
-                                        <div className="w-full bg-gray-700 rounded-full h-2.5">
-                                            <div
-                                                className="bg-gradient-to-r from-purple-400 to-blue-400 h-3 rounded-full transition-all duration-300"
-                                                style={{
-                                                    width: `${Math.min(
-                                                        100,
-                                                        (data?.proposal.current / data?.proposal.target) * 100,
-                                                    ).toFixed(0)}%`,
-                                                }}
-                                            ></div>
+                    </div>
+                ) : data?.proposal ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.5 }}
+                            className="space-y-4"
+                        >
+                            <img
+                                className="w-full h-96 object-cover rounded-xl shadow-lg"
+                                src={data?.proposal.image}
+                                alt={data?.proposal.title}
+                                width={600}
+                                height={400}
+                            />
+                            <Card className="bg-gray-800/50 border-gray-700/50 hover:border-purple-500/50 transition-all">
+                                <CardContent className="p-4">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="rounded-full bg-gray-900/50 p-2">
+                                                <svg
+                                                    className="h-6 w-6 text-purple-400"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth="2"
+                                                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                    />
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <p className="text-sm text-gray-300">Total Balance Tipped</p>
+                                                <p className="text-xl font-semibold text-white">
+                                                    <CountUp
+                                                        start={0}
+                                                        end={Number(data?.proposal.current || 0) / DECIMAL_PLACE}
+                                                        decimals={4}
+                                                    />{" "}
+                                                    ADA
+                                                </p>
+                                            </div>
                                         </div>
-                                        <p className="text-gray-400 text-xs mt-2">
-                                            Funded:{" "}
-                                            {Math.min(
+                                        <button
+                                            className="bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-all disabled:opacity-50"
+                                            onClick={handleWithdraw}
+                                            disabled={data?.proposal.current === 0}
+                                            aria-label="Withdraw balance"
+                                        >
+                                            Withdraw
+                                        </button>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                        <div className="space-y-6">
+                            <motion.h2
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5 }}
+                                className="text-3xl font-bold text-white hover:text-purple-400 transition-colors"
+                            >
+                                {data?.proposal.title}
+                            </motion.h2>
+                            <div className="space-y-2">
+                                <div className="w-full bg-gray-700 rounded-full h-3">
+                                    <motion.div
+                                        className="bg-gradient-to-r from-purple-500 to-blue-500 h-3 rounded-full"
+                                        initial={{ width: 0 }}
+                                        animate={{
+                                            width: `${Math.min(
                                                 100,
                                                 (data?.proposal.current / data?.proposal.target) * 100,
-                                            ).toFixed(0)}
-                                            % --- Participants: {data?.proposal.participants} --- Required:{" "}
-                                            {data?.proposal.target} ADA / Participant
-                                        </p>
-                                    </div>
+                                            )}%`,
+                                        }}
+                                        transition={{ duration: 1, ease: "easeOut" }}
+                                    />
                                 </div>
-                                <div className="mb-4 flex flex-col gap-2">
-                                    <span className="font-bold text-gray-300 dark:text-gray-300">Destination:</span>
-                                    <div className="flex flex-1 items-center mb-4 shadow-lg hover:shadow-purple-500/10">
-                                        <div className="relative">
-                                            <img
-                                                className="h-16 w-16 rounded-full object-cover ring-2 ring-gray-700/50 dark:ring-gray-700/50"
-                                                src="https://randomuser.me/api/portraits/lego/1.jpg"
-                                                alt="Avatar"
-                                            />
-                                            <div className="absolute inset-0 rounded-full shadow-inner"></div>
-                                        </div>
-                                        <div className="ml-4">
-                                            <h2 className="font-bold text-white dark:text-white text-lg hover:text-purple-400">
-                                                {shortenString(data?.proposal.destination) || "Jane Doe"}
-                                            </h2>
-                                            <p className="text-gray-300 dark:text-gray-300">
-                                                Balance: {data?.proposal.current || 0}
+                                <p className="text-sm text-gray-300">
+                                    Funded:{" "}
+                                    {Math.min(100, (data?.proposal.current / data?.proposal.target) * 100).toFixed(0)}%
+                                    • Participants: {data?.proposal.participants} • Required: {data?.proposal.target}{" "}
+                                    ADA / Participant
+                                </p>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <div className="relative">
+                                    <img
+                                        className="h-12 w-12 rounded-full object-cover ring-2 ring-purple-500/30"
+                                        src="https://randomuser.me/api/portraits/lego/1.jpg"
+                                        alt="Avatar"
+                                        width={48}
+                                        height={48}
+                                    />
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold text-white hover:text-purple-400 transition-colors">
+                                        {shortenString(data?.proposal.destination) || "Jane Doe"}
+                                    </h3>
+                                    <p className="text-sm text-gray-300">Balance: {data?.proposal.current || 0} ADA</p>
+                                </div>
+                            </div>
+
+                            {headStatus === HeadStatus.OPEN && (
+                                <form onSubmit={contributeHandleSubmit(onContribute)} className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-200 mb-2">
+                                            Amount to Contribute (ADA)
+                                        </label>
+                                        <input
+                                            type="number"
+                                            {...contributeRegister("amount", { valueAsNumber: true })}
+                                            className={`w-full bg-gray-800/80 text-white py-3 px-4 rounded-lg focus:outline-none focus:ring-2 ${
+                                                contributeErrors.amount ? "ring-red-500" : "ring-purple-500"
+                                            } transition-all`}
+                                            placeholder="Enter amount in ADA"
+                                        />
+                                        {contributeErrors.amount && (
+                                            <p className="text-red-400 text-sm mt-1">
+                                                {contributeErrors.amount.message}
                                             </p>
-                                        </div>
+                                        )}
                                     </div>
-                                </div>
-
-                                {headStatus === HeadStatus.OPEN && (
-                                    <form
-                                        className="flex -mx-2 mb-4 items-end"
-                                        onSubmit={contributeHandleSubmit(onContribute)}
+                                    <button
+                                        type="submit"
+                                        className={`w-full bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700 transition-all flex items-center justify-center gap-2 ${
+                                            isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+                                        }`}
+                                        disabled={isSubmitting}
                                     >
-                                        <div className="w-2/3 px-2">
-                                            <label
-                                                htmlFor="amount"
-                                                className="block text-gray-300 dark:text-gray-300 text-sm font-bold mb-2"
-                                            >
-                                                Enter the amount of ada contributed
-                                            </label>
-                                            <input
-                                                type="number"
-                                                {...contributeRegister("amount", { valueAsNumber: true })}
-                                                className={`w-full bg-gray-800/80 dark:bg-gray-800/80 text-gray-300 dark:text-gray-300 py-2 px-4 rounded-full focus:outline-none focus:ring-2 ${
-                                                    contributeErrors.amount
-                                                        ? "focus:ring-red-500"
-                                                        : "focus:ring-purple-600"
-                                                }`}
-                                                placeholder="Nhập số..."
-                                            />
-                                        </div>
-                                        <div className="w-1/3 px-2">
-                                            <button
-                                                type="submit"
-                                                className={`w-full bg-purple-600/80 text-white py-2 px-4 rounded-full font-bold hover:bg-purple-700/90 transition-all flex items-center justify-center gap-2 ${
-                                                    isSubmitting ? "opacity-70 cursor-not-allowed" : ""
-                                                }`}
-                                                disabled={isSubmitting}
-                                                aria-disabled={isSubmitting}
-                                                aria-label={isSubmitting ? "Contributing transaction" : "Contribute"}
-                                            >
-                                                {isSubmitting ? (
-                                                    <>
-                                                        <svg
-                                                            className="animate-spin h-5 w-5 text-white"
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                        >
-                                                            <circle
-                                                                className="opacity-25"
-                                                                cx="12"
-                                                                cy="12"
-                                                                r="10"
-                                                                stroke="currentColor"
-                                                                strokeWidth="4"
-                                                            ></circle>
-                                                            <path
-                                                                className="opacity-75"
-                                                                fill="currentColor"
-                                                                d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8 8 8 0 01-8-8z"
-                                                            ></path>
-                                                        </svg>
-                                                        Contributing...
-                                                    </>
-                                                ) : (
-                                                    "Commit"
-                                                )}
-                                            </button>
-                                        </div>
-                                    </form>
-                                )}
+                                        {isSubmitting ? (
+                                            <>
+                                                <svg
+                                                    className="animate-spin h-5 w-5 text-white"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <circle
+                                                        className="opacity-25"
+                                                        cx="12"
+                                                        cy="12"
+                                                        r="10"
+                                                        stroke="currentColor"
+                                                        strokeWidth="4"
+                                                    />
+                                                    <path
+                                                        className="opacity-75"
+                                                        fill="currentColor"
+                                                        d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8 8 8 0 01-8-8z"
+                                                    />
+                                                </svg>
+                                                Contributing...
+                                            </>
+                                        ) : (
+                                            "Contribute"
+                                        )}
+                                    </button>
+                                </form>
+                            )}
 
-                                {headStatus === HeadStatus.INITIALIZING && (
-                                    <form
-                                        onSubmit={handleSubmit(onCommit)}
-                                        className="flex items-end gap-2 w-full mb-2"
-                                    >
-                                        <div className="w-2/3  relative">
-                                            <label
-                                                htmlFor="amount"
-                                                className="block text-gray-300 dark:text-gray-300 text-sm font-bold mb-2"
-                                            >
-                                                Choose the amount of ada commit
-                                            </label>
+                            {headStatus === HeadStatus.INITIALIZING && (
+                                <form onSubmit={handleSubmit(onCommit)} className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-200 mb-2">
+                                            Select ADA to Commit
+                                        </label>
+                                        <div className="relative">
                                             <select
                                                 {...register("selectedUtxo")}
-                                                className={`w-full appearance-none bg-gray-800/90 text-gray-200 py-2 px-5 pr-12 rounded-full font-medium text-sm border ${
-                                                    errors.selectedUtxo
-                                                        ? "border-red-500 focus:ring-red-500"
-                                                        : "border-gray-700/50 focus:ring-purple-500"
-                                                } focus:outline-none transition-all duration-300 cursor-pointer shadow-sm`}
-                                                aria-label="Select ADA amount to commit"
+                                                className={`w-full bg-gray-800/80 text-white py-3 px-4 rounded-lg focus:outline-none focus:ring-2 ${
+                                                    errors.selectedUtxo ? "ring-red-500" : "ring-purple-500"
+                                                } transition-all appearance-none`}
                                                 disabled={isLoadingUtxosLovelaceOnly}
                                             >
                                                 <option value="">
-                                                    {isLoadingUtxosLovelaceOnly ? "Loading ..." : "Select ADA Amount"}
+                                                    {isLoadingUtxosLovelaceOnly ? "Loading..." : "Select ADA Amount"}
                                                 </option>
                                                 {utxosLovelaceOnly?.map((utxo, index: number) => (
                                                     <option key={index} value={JSON.stringify(utxo)}>
@@ -316,159 +339,306 @@ export default function Page() {
                                                     </option>
                                                 ))}
                                             </select>
-
-                                            <div className="absolute top-10 right-4 flex items-center pointer-events-none">
+                                            <svg
+                                                className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M19 9l-7 7-7-7"
+                                                />
+                                            </svg>
+                                        </div>
+                                        {errors.selectedUtxo && (
+                                            <p className="text-red-400 text-sm mt-1">{errors.selectedUtxo.message}</p>
+                                        )}
+                                    </div>
+                                    <button
+                                        type="submit"
+                                        className={`w-full bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700 transition-all flex items-center justify-center gap-2 ${
+                                            isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+                                        }`}
+                                        disabled={isSubmitting}
+                                    >
+                                        {isSubmitting ? (
+                                            <>
                                                 <svg
-                                                    className="w-4 h-4 text-gray-400"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
+                                                    className="animate-spin h-5 w-5 text-white"
                                                     xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
                                                 >
+                                                    <circle
+                                                        className="opacity-25"
+                                                        cx="12"
+                                                        cy="12"
+                                                        r="10"
+                                                        stroke="currentColor"
+                                                        strokeWidth="4"
+                                                    />
                                                     <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth="2"
-                                                        d="M19 9l-7 7-7-7"
+                                                        className="opacity-75"
+                                                        fill="currentColor"
+                                                        d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8 8 8 0 01-8-8z"
                                                     />
                                                 </svg>
-                                            </div>
-                                        </div>
+                                                Submitting...
+                                            </>
+                                        ) : (
+                                            "Commit"
+                                        )}
+                                    </button>
+                                </form>
+                            )}
 
-                                        <div className="w-1/3 px-2">
-                                            <button
-                                                type="submit"
-                                                className={`w-full bg-purple-600/80 text-white py-2 px-4 rounded-full font-bold hover:bg-purple-700/90 transition-all flex items-center justify-center gap-2 ${
-                                                    isSubmitting ? "opacity-70 cursor-not-allowed" : ""
-                                                }`}
-                                                disabled={isSubmitting}
-                                                aria-disabled={isSubmitting}
-                                                aria-label={isSubmitting ? "Submitting transaction" : "Commit funds"}
-                                            >
-                                                {isSubmitting ? (
-                                                    <>
-                                                        <svg
-                                                            className="animate-spin h-5 w-5 text-white"
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                        >
-                                                            <circle
-                                                                className="opacity-25"
-                                                                cx="12"
-                                                                cy="12"
-                                                                r="10"
-                                                                stroke="currentColor"
-                                                                strokeWidth="4"
-                                                            ></circle>
-                                                            <path
-                                                                className="opacity-75"
-                                                                fill="currentColor"
-                                                                d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8 8 8 0 01-8-8z"
-                                                            ></path>
-                                                        </svg>
-                                                        Submitting...
-                                                    </>
-                                                ) : (
-                                                    "Commit"
-                                                )}
-                                            </button>
-                                        </div>
-                                    </form>
-                                )}
-                                {errors.selectedUtxo && (
-                                    <p className="text-red-400 text-sm mt-2">{errors.selectedUtxo.message}</p>
-                                )}
-                                {contributeErrors.amount && (
-                                    <p className="text-red-500 text-sm mt-1">{contributeErrors.amount.message}</p>
-                                )}
-                                <div>
-                                    <span className="font-bold text-gray-300 dark:text-gray-300">
-                                        Product Description:
-                                    </span>
-                                    <p className="text-gray-300 dark:text-gray-300 text-sm mt-2">
-                                        {data?.proposal.description}
+                            <div>
+                                <h3 className="text-lg font-semibold text-gray-200">Description</h3>
+                                <p className="text-sm text-gray-300">{data?.proposal.description}</p>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="text-center text-gray-400 py-20 text-lg">Proposal not found.</div>
+                )}
+
+                <motion.div
+                    className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                >
+                    <Card className="bg-gray-800/50 border-gray-700/50 hover:border-purple-500/50 transition-all">
+                        <CardHeader>
+                            <CardTitle className="text-white flex items-center gap-2">
+                                <svg
+                                    className="w-6 h-6 text-purple-400"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                    />
+                                </svg>
+                                Balance Information
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <motion.div
+                                className="space-y-4"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.4 }}
+                            >
+                                <div className="bg-gray-700/30 p-4 rounded-lg hover:bg-purple-500/10 transition-all">
+                                    <p className="text-sm text-gray-300">Your Balance on Hydra</p>
+                                    <p className="text-xl font-semibold text-white">
+                                        <CountUp
+                                            start={0}
+                                            end={Number(
+                                                (utxosHydra?.reduce((sum, utxo) => sum + utxo.amount, 0) || 0) /
+                                                    DECIMAL_PLACE,
+                                            )}
+                                            decimals={4}
+                                        />{" "}
+                                        ₳
                                     </p>
                                 </div>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="text-center text-gray-400 py-20 text-lg">data?.proposal not found.</div>
-                    )}
+                                <div className="bg-gray-700/30 p-4 rounded-lg hover:bg-purple-500/10 transition-all">
+                                    <p className="text-sm text-gray-300">Your Contribution to Proposal</p>
+                                    <p className="text-xl font-semibold text-white">
+                                        <CountUp start={0} end={userContribution / DECIMAL_PLACE} decimals={4} /> ₳
+                                    </p>
+                                </div>
+                            </motion.div>
+                        </CardContent>
+                    </Card>
 
-                    <section className="space-y-4">
-                        <h3 className="text-xl font-semibold text-gray-200">Recent Transactions</h3>
-                        <div className="overflow-x-auto bg-gray-800/40 rounded-lg backdrop-blur-sm border border-gray-700/30">
-                            <table className="w-full">
-                                <thead>
-                                    <tr className="border-b border-gray-700/50">
-                                        <th className="py-4 px-6 text-left text-gray-300 font-semibold">
-                                            Transaction Hash
-                                        </th>
-                                        <th className="py-4 px-6 text-left text-gray-300 font-semibold">
-                                            Wallet Address
-                                        </th>
-                                        <th className="py-4 px-6 text-right text-gray-300 font-semibold">Amount</th>
-                                        <th className="py-4 px-6 text-center text-gray-300 font-semibold">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {isLoading ? (
-                                        [...Array(5)].map((_, i) => (
-                                            <tr key={i} className="border-b border-gray-700/50 animate-pulse">
-                                                <td className="py-4 px-6">
-                                                    <div className="h-4 w-32 bg-gray-700/60 rounded" />
-                                                </td>
-                                                <td className="py-4 px-6">
-                                                    <div className="h-4 w-32 bg-gray-700/60 rounded" />
-                                                </td>
-                                                <td className="py-4 px-6 text-right">
-                                                    <div className="h-4 w-16 bg-gray-700/60 rounded ml-auto" />
-                                                </td>
-                                                <td className="py-4 px-6 text-center">
-                                                    <div className="h-4 w-20 bg-gray-700/60 rounded mx-auto" />
-                                                </td>
-                                            </tr>
-                                        ))
-                                    ) : data?.proposal?.transactions?.length ? (
-                                        data?.proposal.transactions.map((tx: any, i: number) => (
-                                            <tr
-                                                key={i}
-                                                className="border-b border-gray-700/50 hover:bg-purple-500/5 transition-colors"
+                    <Card className="bg-gray-800/50 border-gray-700/50 hover:border-purple-500/50 transition-all">
+                        <CardHeader>
+                            <CardTitle className="text-white flex items-center gap-2">
+                                <svg
+                                    className="w-6 h-6 text-purple-400"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                    />
+                                </svg>
+                                Address Information
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <motion.div
+                                className="space-y-4"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.4 }}
+                            >
+                                {/* User's Wallet Address */}
+                                {address ? (
+                                    <motion.div
+                                        className="flex items-center gap-4 p-3 bg-gray-700/20 rounded-lg hover:bg-purple-500/10 transition-all"
+                                        initial={{ opacity: 0, x: -10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: 0.5 }}
+                                    >
+                                        <div className="relative">
+                                            <img
+                                                className="h-10 w-10 rounded-full object-cover ring-2 ring-purple-500/30"
+                                                src="https://randomuser.me/api/portraits/lego/1.jpg"
+                                                alt="User Avatar"
+                                                width={40}
+                                                height={40}
+                                            />
+                                            <div className="absolute -top-1 -right-1 h-4 w-4 bg-green-500 rounded-full border-2 border-gray-800" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="text-sm font-semibold text-white hover:text-purple-400 transition-colors">
+                                                {shortenString(address, 6, 4)}
+                                            </h3>
+                                            <p className="text-xs text-gray-300">
+                                                Your Contribution: {(userContribution / DECIMAL_PLACE).toFixed(4)} ₳
+                                            </p>
+                                        </div>
+                                    </motion.div>
+                                ) : (
+                                    <p className="text-gray-400 text-sm">Connect your wallet to view your address.</p>
+                                )}
+
+                                {/* Other Participants */}
+                                {data?.proposal?.participantsList?.length > 0 ? (
+                                    data.proposal.participantsList
+                                        .filter((participant) => participant.address !== address)
+                                        .slice(0, 3) // Limit to 3 participants to avoid clutter
+                                        .map((participant, index) => (
+                                            <motion.div
+                                                key={index}
+                                                className="flex items-center gap-4 p-3 bg-gray-700/20 rounded-lg hover:bg-purple-500/10 transition-all"
+                                                initial={{ opacity: 0, x: -10 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                transition={{ delay: 0.6 + index * 0.1 }}
                                             >
-                                                <td className="py-4 px-6 text-gray-300 font-mono">{tx.hash}</td>
-                                                <td className="py-4 px-6 text-gray-300 font-mono">{tx.wallet}</td>
-                                                <td className="py-4 px-6 text-right text-gray-300">{tx.amount} ADA</td>
-                                                <td className="py-4 px-6 text-center">
-                                                    <span
-                                                        className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-medium ${
-                                                            tx.status === "Confirmed"
-                                                                ? "bg-green-500/20 text-green-400"
-                                                                : "bg-yellow-500/20 text-yellow-400"
-                                                        }`}
-                                                    >
-                                                        {tx.status}
-                                                    </span>
-                                                </td>
-                                            </tr>
+                                                <div className="relative">
+                                                    <img
+                                                        className="h-10 w-10 rounded-full object-cover ring-2 ring-purple-500/30"
+                                                        src="https://randomuser.me/api/portraits/lego/1.jpg"
+                                                        alt="Participant Avatar"
+                                                        width={40}
+                                                        height={40}
+                                                    />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <h3 className="text-sm font-semibold text-white hover:text-purple-400 transition-colors">
+                                                        {shortenString(participant.address, 6, 4)}
+                                                    </h3>
+                                                    <p className="text-xs text-gray-300">
+                                                        Contribution: {(participant.contribution || 0) / DECIMAL_PLACE}{" "}
+                                                        ₳
+                                                    </p>
+                                                </div>
+                                            </motion.div>
                                         ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan={4} className="text-center text-gray-400 py-8">
-                                                No transactions found.
+                                ) : (
+                                    <p className="text-gray-400 text-sm">No other participants yet.</p>
+                                )}
+                                {data?.proposal?.participantsList?.length > 3 && (
+                                    <p className="text-gray-400 text-xs mt-2">
+                                        +{data?.proposal?.participantsList.length - 3} more participants
+                                    </p>
+                                )}
+                            </motion.div>
+                        </CardContent>
+                    </Card>
+                </motion.div>
+
+                <section className="mt-12">
+                    <h3 className="text-xl font-semibold text-gray-200 mb-4">Recent Transactions</h3>
+                    <div className="bg-gray-800/50 rounded-xl border border-gray-700/50 overflow-hidden">
+                        <table className="w-full text-left">
+                            <thead>
+                                <tr className="bg-gray-700/30">
+                                    <th className="py-4 px-6 text-gray-200 font-semibold">Transaction Hash</th>
+                                    <th className="py-4 px-6 text-gray-200 font-semibold">Wallet Address</th>
+                                    <th className="py-4 px-6 text-gray-200 font-semibold text-right">Amount</th>
+                                    <th className="py-4 px-6 text-gray-200 font-semibold text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {isLoading ? (
+                                    [...Array(5)].map((_, i) => (
+                                        <tr key={i} className="border-b border-gray-700/50 animate-pulse">
+                                            <td className="py-4 px-6">
+                                                <div className="h-4 w-32 bg-gray-700/50 rounded" />
+                                            </td>
+                                            <td className="py-4 px-6">
+                                                <div className="h-4 w-32 bg-gray-700/50 rounded" />
+                                            </td>
+                                            <td className="py-4 px-6 text-right">
+                                                <div className="h-4 w-16 bg-gray-700/50 rounded" />
+                                            </td>
+                                            <td className="py-4 px-6 text-center">
+                                                <div className="h-4 w-20 bg-gray-700/50 rounded" />
                                             </td>
                                         </tr>
-                                    )}
-                                </tbody>
-                            </table>
+                                    ))
+                                ) : data?.proposal?.transactions?.length ? (
+                                    data?.proposal.transactions.map((tx: any, i: number) => (
+                                        <motion.tr
+                                            key={i}
+                                            className="border-b border-gray-700/50 hover:bg-purple-500/10 transition-colors"
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.2 + i * 0.1 }}
+                                        >
+                                            <td className="py-4 px-6 text-gray-300 font-mono">
+                                                {shortenString(tx.hash)}
+                                            </td>
+                                            <td className="py-4 px-6 text-gray-300 font-mono">
+                                                {shortenString(tx.wallet)}
+                                            </td>
+                                            <td className="py-4 px-6 text-right text-gray-300">{tx.amount} ADA</td>
+                                            <td className="py-4 px-6 text-center">
+                                                <span
+                                                    className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                                                        tx.status === "Confirmed"
+                                                            ? "bg-green-500/20 text-green-400"
+                                                            : "bg-yellow-500/20 text-yellow-400"
+                                                    }`}
+                                                >
+                                                    {tx.status}
+                                                </span>
+                                            </td>
+                                        </motion.tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={4} className="text-center text-gray-400 py-8">
+                                            No transactions found.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                    {data?.proposal?.transactions?.length > 0 && (
+                        <div className="flex justify-center mt-6">
+                            <Pagination currentPage={1} setCurrentPage={null!} totalPages={2} />
                         </div>
-                        {data?.proposal?.transactions && data?.proposal.transactions.length > 0 && (
-                            <div className="flex justify-center mt-6">
-                                <Pagination currentPage={1} setCurrentPage={null!} totalPages={2} />
-                            </div>
-                        )}
-                    </section>
-                </div>
+                    )}
+                </section>
             </div>
         </main>
     );
