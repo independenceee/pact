@@ -21,7 +21,7 @@ cách nhìn nhận vấn đề với sự kiên nhẫn hơn,
 và quan trọng nhất, là học cách tin vào quá trình.
 
 Từ những bài học ấy, Hydra Cardano được hình thành.
-Và sau cùng, hành trình ấy đã đơm hoa kết trái.
+Và sau cùng, hành trình ấy đã có kết quả.
 
 Không chỉ là một dự án công nghệ,
 Hydra Cardano còn là minh chứng rằng:
