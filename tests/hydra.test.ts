@@ -14,8 +14,8 @@ import { MeshTxBuilder } from "~/txbuilders/mesh.txbuilder";
 
 describe("Pact is a multi-party decentralized application (dApp) built on Cardano’s Hydra Head, designed to enable groups of people to safely pool funds for a shared goal (e.g., co-purchasing an NFT, funding a small project, or creating a community treasury).", function () {
     let meshWallet: MeshWallet;
-    // let isCreator: boolean = true; // Use for Alice
-    let isCreator: boolean = false; // Use for Bob
+    let isCreator: boolean = true; // Use for Alice
+    // let isCreator: boolean = false; // Use for Bob
     let hydraProvider: HydraProvider;
 
     beforeEach(async function () {
@@ -41,7 +41,7 @@ describe("Pact is a multi-party decentralized application (dApp) built on Cardan
 
     describe("Common and basic state management in head hydra", function () {
         it("Initializing Head creation and UTxO commitment phase.", async () => {
-            return;
+            // return;
             try {
                 const hydraTxBuilder = new HydraTxBuilder({
                     meshWallet: meshWallet,
@@ -69,7 +69,7 @@ describe("Pact is a multi-party decentralized application (dApp) built on Cardan
         });
 
         it("Ready to fanout  Snapshot finalized, ready for layer-1 distribution.", async () => {
-            // return;
+            return;
             try {
                 const hydraTxBuilder = new HydraTxBuilder({
                     meshWallet: meshWallet,
@@ -115,7 +115,7 @@ describe("Pact is a multi-party decentralized application (dApp) built on Cardan
 
     describe("Implement full fund lifecycle within Hydra head (commit funds into head and decommit them back to main chain)", () => {
         it("1- Commit UTXOs into the Hydra head to make them available for off-chain transactions.", async () => {
-            return;
+            // return;
             const hydraTxBuilder = new HydraTxBuilder({
                 meshWallet: meshWallet,
                 hydraProvider: hydraProvider,
@@ -198,7 +198,7 @@ describe("Pact is a multi-party decentralized application (dApp) built on Cardan
                 hydraProvider: hydraProvider,
             });
             await hydraTxBuilder.initialize();
-            const unsignedTx: string = await hydraTxBuilder.contribute({ quantity: 20, required: 20 });
+            const unsignedTx: string = await hydraTxBuilder.contribute({ quantity: 20, required: 20, destination: "" });
             const signedTx: string = await meshWallet.signTx(unsignedTx, true);
             await hydraTxBuilder.submitTx({ signedTx: signedTx });
         });

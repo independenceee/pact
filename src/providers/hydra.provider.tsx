@@ -14,7 +14,7 @@ export const HydraProvider: React.FC<PropsWithChildren> = function ({ children }
         initialData: HeadStatus.IDLE,
         queryKey: [HEAD_STATUS_QUERY_KEY, address],
         queryFn: async function () {
-            return getStatus({ walletAddress: address as string, isCreator: true });
+            return getStatus({ walletAddress: address as string, isCreator: false });
         },
         enabled: !!address,
     });

@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { ClipLoader } from "react-spinners";
@@ -19,12 +19,14 @@ import {
     AlertDialogTrigger,
 } from "./ui/alert-dialog";
 import { IoWarningOutline as Warn } from "react-icons/io5";
-import { disburse } from "~/services/hydra.service";
+import { disburse, fanout, submitHydraTx } from "~/services/hydra.service";
 import { HeadStatus } from "~/constants/common.constant";
 import { useHydra } from "~/hooks/use-hydra";
+import { useWallet } from "~/hooks/use-wallet";
 
 const Status: React.FC = () => {
     const router = useRouter();
+    const { address, signTx } = useWallet();
     const queryClient = useQueryClient();
     const { status, isLoading } = useHydra();
     const [loading, setLoading] = useState<boolean>(false);
@@ -35,18 +37,36 @@ const Status: React.FC = () => {
     );
 
     const handleFanout = useCallback(async () => {
-        setLoading(true);
         try {
-            await disburse({});
+            setLoading(true);
+            if (status === HeadStatus.CLOSED || HeadStatus.FANOUT_POSSIBLE || HeadStatus.FINAL) {
+                const unsignedTx = await disburse({ walletAddress: address as string, isCreator: true });
+                const signedTx = await signTx(unsignedTx as string);
+                await submitHydraTx({ signedTx: signedTx, isCreator: true });
+            }
+            await fanout({ status: status, isCreator: false });
             toast.success("Fanout completed successfully");
-            queryClient.invalidateQueries({ queryKey: ["headStatus"] }); 
-            router.push("/dashboard"); 
+
+            queryClient.invalidateQueries({ queryKey: ["headStatus"] });
+            router.push("/dashboard");
         } catch (error) {
             toast.error(error instanceof Error ? error.message : "Failed to fanout");
         } finally {
             setLoading(false);
         }
     }, [queryClient, router]);
+
+    useEffect(() => {
+        if (status === HeadStatus.CLOSED) {
+            handleFanout();
+        }
+    }, [status, handleFanout]);
+
+    // useEffect(() => {
+    //     if (status === HeadStatus.IDLE) {
+    //         handleFanout();
+    //     }
+    // }, [status, handleFanout]);
 
     return (
         <motion.div
@@ -90,7 +110,7 @@ const Status: React.FC = () => {
                         <ClipLoader color="#9333ea" size={14} />
                     ) : (
                         <span className="rounded-md bg-purple-100 px-2 py-1 dark:bg-purple-800/50">
-                            {status || HeadStatus.IDLE}
+                            {status || "Loading ..."}
                         </span>
                     )}
                 </motion.div>
@@ -111,7 +131,7 @@ const Status: React.FC = () => {
                                 disabled={isLoading}
                                 className="w-full rounded-md bg-purple-500 py-3 px-8 text-base font-semibold text-white shadow-lg hover:bg-purple-600 disabled:opacity-50 dark:bg-purple-600 dark:hover:bg-purple-700"
                             >
-                                {isLoading ? "Fanouting..." : "Fanout"}
+                                {isLoading && loading ? "Fanouting..." : "Fanout"}
                             </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent className="bg-white dark:bg-gray-800">
@@ -129,7 +149,7 @@ const Status: React.FC = () => {
                                 </AlertDialogCancel>
                                 <AlertDialogAction
                                     onClick={handleFanout}
-                                    disabled={isLoading}
+                                    disabled={isLoading || loading}
                                     className="bg-purple-500 hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-700"
                                 >
                                     {isLoading ? "Fanouting..." : "Fanout"}
