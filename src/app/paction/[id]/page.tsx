@@ -138,7 +138,7 @@ export default function Page() {
 
     return (
         <main className="font-sans bg-gradient-to-b from-gray-900 to-gray-800 min-h-screen text-white">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 sm:pt-24 pt-30 flex flex-col gap-4">
                 <Status />
                 {isLoading ? (
                     <div className="animate-pulse space-y-6">
@@ -155,10 +155,12 @@ export default function Page() {
                 ) : data?.proposal ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 0.5 }}
-                            className="space-y-4"
+                            initial={{ opacity: 0, scale: 0.95, y: -20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            transition={{ duration: 0.5, ease: "easeOut" }}
+                            whileInView={{ y: 0, opacity: 1 }}
+                            viewport={{ once: false, amount: 0.1 }}
+                            className="space-y-4 z-10 "
                         >
                             <img
                                 className="w-full h-96 object-cover rounded-xl shadow-lg"
@@ -399,170 +401,122 @@ export default function Page() {
                                 <h3 className="text-lg font-semibold text-gray-200">Description</h3>
                                 <p className="text-sm text-gray-300">{data?.proposal.description}</p>
                             </div>
+
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.3 }}
+                            >
+                                <Card className="bg-gray-800/50 border-gray-700/50 hover:border-purple-500/50 transition-all">
+                                    <CardHeader>
+                                        <CardTitle className="text-white flex items-center gap-2">
+                                            <svg
+                                                className="w-6 h-6 text-purple-400"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth="2"
+                                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                                />
+                                            </svg>
+                                            Address Information
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <motion.div
+                                            className="space-y-4"
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.4 }}
+                                        >
+                                            {/* User's Wallet Address */}
+                                            {address ? (
+                                                <motion.div
+                                                    className="flex items-center gap-4 p-3 bg-gray-700/20 rounded-lg hover:bg-purple-500/10 transition-all"
+                                                    initial={{ opacity: 0, x: -10 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    transition={{ delay: 0.5 }}
+                                                >
+                                                    <div className="relative">
+                                                        <img
+                                                            className="h-10 w-10 rounded-full object-cover ring-2 ring-purple-500/30"
+                                                            src="https://randomuser.me/api/portraits/lego/1.jpg"
+                                                            alt="User Avatar"
+                                                            width={40}
+                                                            height={40}
+                                                        />
+                                                        <div className="absolute -top-1 -right-1 h-4 w-4 bg-green-500 rounded-full border-2 border-gray-800" />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <h3 className="text-sm font-semibold text-white hover:text-purple-400 transition-colors">
+                                                            {shortenString(address, 6, 4)}
+                                                        </h3>
+                                                        <p className="text-xs text-gray-300">
+                                                            Your Contribution:{" "}
+                                                            {(userContribution / DECIMAL_PLACE).toFixed(4)} ₳
+                                                        </p>
+                                                    </div>
+                                                </motion.div>
+                                            ) : (
+                                                <p className="text-gray-400 text-sm">
+                                                    Connect your wallet to view your address.
+                                                </p>
+                                            )}
+
+                                            {/* Other Participants */}
+                                            {data?.proposal?.participantsList?.length > 0 ? (
+                                                data.proposal.participantsList
+                                                    .filter((participant) => participant.address !== address)
+                                                    .slice(0, 3) // Limit to 3 participants to avoid clutter
+                                                    .map((participant, index) => (
+                                                        <motion.div
+                                                            key={index}
+                                                            className="flex items-center gap-4 p-3 bg-gray-700/20 rounded-lg hover:bg-purple-500/10 transition-all"
+                                                            initial={{ opacity: 0, x: -10 }}
+                                                            animate={{ opacity: 1, x: 0 }}
+                                                            transition={{ delay: 0.6 + index * 0.1 }}
+                                                        >
+                                                            <div className="relative">
+                                                                <img
+                                                                    className="h-10 w-10 rounded-full object-cover ring-2 ring-purple-500/30"
+                                                                    src="https://randomuser.me/api/portraits/lego/1.jpg"
+                                                                    alt="Participant Avatar"
+                                                                    width={40}
+                                                                    height={40}
+                                                                />
+                                                            </div>
+                                                            <div className="flex-1">
+                                                                <h3 className="text-sm font-semibold text-white hover:text-purple-400 transition-colors">
+                                                                    {shortenString(participant.address, 6, 4)}
+                                                                </h3>
+                                                                <p className="text-xs text-gray-300">
+                                                                    Contribution:{" "}
+                                                                    {(participant.contribution || 0) / DECIMAL_PLACE} ₳
+                                                                </p>
+                                                            </div>
+                                                        </motion.div>
+                                                    ))
+                                            ) : (
+                                                <p className="text-gray-400 text-sm">No other participants yet.</p>
+                                            )}
+                                            {data?.proposal?.participantsList?.length > 3 && (
+                                                <p className="text-gray-400 text-xs mt-2">
+                                                    +{data?.proposal?.participantsList.length - 3} more participants
+                                                </p>
+                                            )}
+                                        </motion.div>
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
                         </div>
                     </div>
                 ) : (
                     <div className="text-center text-gray-400 py-20 text-lg">Proposal not found.</div>
                 )}
-
-                <motion.div
-                    className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                >
-                    <Card className="bg-gray-800/50 border-gray-700/50 hover:border-purple-500/50 transition-all">
-                        <CardHeader>
-                            <CardTitle className="text-white flex items-center gap-2">
-                                <svg
-                                    className="w-6 h-6 text-purple-400"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                    />
-                                </svg>
-                                Balance Information
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <motion.div
-                                className="space-y-4"
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.4 }}
-                            >
-                                <div className="bg-gray-700/30 p-4 rounded-lg hover:bg-purple-500/10 transition-all">
-                                    <p className="text-sm text-gray-300">Your Balance on Hydra</p>
-                                    <p className="text-xl font-semibold text-white">
-                                        <CountUp
-                                            start={0}
-                                            end={Number(
-                                                (utxosHydra?.reduce((sum, utxo) => sum + utxo.amount, 0) || 0) /
-                                                    DECIMAL_PLACE,
-                                            )}
-                                            decimals={4}
-                                        />{" "}
-                                        ₳
-                                    </p>
-                                </div>
-                                <div className="bg-gray-700/30 p-4 rounded-lg hover:bg-purple-500/10 transition-all">
-                                    <p className="text-sm text-gray-300">Your Contribution to Proposal</p>
-                                    <p className="text-xl font-semibold text-white">
-                                        <CountUp start={0} end={userContribution / DECIMAL_PLACE} decimals={4} /> ₳
-                                    </p>
-                                </div>
-                            </motion.div>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="bg-gray-800/50 border-gray-700/50 hover:border-purple-500/50 transition-all">
-                        <CardHeader>
-                            <CardTitle className="text-white flex items-center gap-2">
-                                <svg
-                                    className="w-6 h-6 text-purple-400"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                    />
-                                </svg>
-                                Address Information
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <motion.div
-                                className="space-y-4"
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.4 }}
-                            >
-                                {/* User's Wallet Address */}
-                                {address ? (
-                                    <motion.div
-                                        className="flex items-center gap-4 p-3 bg-gray-700/20 rounded-lg hover:bg-purple-500/10 transition-all"
-                                        initial={{ opacity: 0, x: -10 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: 0.5 }}
-                                    >
-                                        <div className="relative">
-                                            <img
-                                                className="h-10 w-10 rounded-full object-cover ring-2 ring-purple-500/30"
-                                                src="https://randomuser.me/api/portraits/lego/1.jpg"
-                                                alt="User Avatar"
-                                                width={40}
-                                                height={40}
-                                            />
-                                            <div className="absolute -top-1 -right-1 h-4 w-4 bg-green-500 rounded-full border-2 border-gray-800" />
-                                        </div>
-                                        <div className="flex-1">
-                                            <h3 className="text-sm font-semibold text-white hover:text-purple-400 transition-colors">
-                                                {shortenString(address, 6, 4)}
-                                            </h3>
-                                            <p className="text-xs text-gray-300">
-                                                Your Contribution: {(userContribution / DECIMAL_PLACE).toFixed(4)} ₳
-                                            </p>
-                                        </div>
-                                    </motion.div>
-                                ) : (
-                                    <p className="text-gray-400 text-sm">Connect your wallet to view your address.</p>
-                                )}
-
-                                {/* Other Participants */}
-                                {data?.proposal?.participantsList?.length > 0 ? (
-                                    data.proposal.participantsList
-                                        .filter((participant) => participant.address !== address)
-                                        .slice(0, 3) // Limit to 3 participants to avoid clutter
-                                        .map((participant, index) => (
-                                            <motion.div
-                                                key={index}
-                                                className="flex items-center gap-4 p-3 bg-gray-700/20 rounded-lg hover:bg-purple-500/10 transition-all"
-                                                initial={{ opacity: 0, x: -10 }}
-                                                animate={{ opacity: 1, x: 0 }}
-                                                transition={{ delay: 0.6 + index * 0.1 }}
-                                            >
-                                                <div className="relative">
-                                                    <img
-                                                        className="h-10 w-10 rounded-full object-cover ring-2 ring-purple-500/30"
-                                                        src="https://randomuser.me/api/portraits/lego/1.jpg"
-                                                        alt="Participant Avatar"
-                                                        width={40}
-                                                        height={40}
-                                                    />
-                                                </div>
-                                                <div className="flex-1">
-                                                    <h3 className="text-sm font-semibold text-white hover:text-purple-400 transition-colors">
-                                                        {shortenString(participant.address, 6, 4)}
-                                                    </h3>
-                                                    <p className="text-xs text-gray-300">
-                                                        Contribution: {(participant.contribution || 0) / DECIMAL_PLACE}{" "}
-                                                        ₳
-                                                    </p>
-                                                </div>
-                                            </motion.div>
-                                        ))
-                                ) : (
-                                    <p className="text-gray-400 text-sm">No other participants yet.</p>
-                                )}
-                                {data?.proposal?.participantsList?.length > 3 && (
-                                    <p className="text-gray-400 text-xs mt-2">
-                                        +{data?.proposal?.participantsList.length - 3} more participants
-                                    </p>
-                                )}
-                            </motion.div>
-                        </CardContent>
-                    </Card>
-                </motion.div>
 
                 <section className="mt-12">
                     <h3 className="text-xl font-semibold text-gray-200 mb-4">Recent Transactions</h3>
