@@ -41,7 +41,7 @@ describe("Pact is a multi-party decentralized application (dApp) built on Cardan
 
     describe("Common and basic state management in head hydra", function () {
         it("Initializing Head creation and UTxO commitment phase.", async () => {
-            // return;
+            return;
             try {
                 const hydraTxBuilder = new HydraTxBuilder({
                     meshWallet: meshWallet,
